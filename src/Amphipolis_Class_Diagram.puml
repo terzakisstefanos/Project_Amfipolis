@@ -1,0 +1,208 @@
+@startuml
+
+' ==========================================
+' 1. Enums
+' ==========================================
+enum Color {
+    RED
+    GREEN
+    BLUE
+    YELLOW
+    BROWN
+    PURPLE
+}
+
+enum SkeletonType {
+    BIG
+    SMALL
+}
+
+enum SkeletonPart {
+    UPPER
+    LOWER
+}
+
+' ==========================================
+' 2. Abstract & Base Model Classes
+' ==========================================
+abstract class Tile {
+    - String imagePath
+    + String getImagePath()
+    + abstract int calculatePoints()
+}
+
+abstract class FindingTile {
+}
+
+abstract class Character {
+    - String Name
+    - boolean Is_used
+    + boolean Get_used()
+    + void Set_used()
+    + abstract void Use_ability(Board board, Player player)
+}
+
+class Zone {
+    - ArrayList<Tile> tiles
+    + void addTile(Tile t)
+    + Tile removeTile()
+    + boolean isEmpty()
+    + ArrayList<Tile> getTiles()
+}
+
+' ==========================================
+' 3. Concrete Model Classes
+' ==========================================
+class Board {
+    + void init()
+    + Zone getMosaicZone()
+    + Zone getAmphoraZone()
+    + Zone getSkeletonZone()
+    + Zone getStatueZone()
+    + EntranceZone getEntranceZone()
+}
+
+class Player {
+    - String name
+    - int score
+    - ArrayList<Tile> collectedTiles
+    - Character[] myCharacters
+    + int compute_points()
+    + void addTile(Tile t)
+}
+
+class Bag {
+    - ArrayList<Tile> contents
+    + Bag()
+    + Tile drawRandomTile()
+    + boolean isEmpty()
+}
+
+class EntranceZone {
+    - int maxCapacity = 16
+    + boolean isFull()
+}
+
+' --- Tile Subclasses ---
+class LandslideTile {
+}
+
+class MosaicTile {
+    - Color color
+    + Color getColor()
+}
+
+class AmphoraTile {
+    - Color color
+    + Color getColor()
+}
+
+class SkeletonTile {
+    - SkeletonType type
+    - SkeletonPart part
+    + SkeletonType getType()
+    + SkeletonPart getPart()
+}
+
+class StatueTile {
+    - boolean isSphinx
+}
+
+' --- Character Subclasses ---
+class Assistant {
+    + void Use_ability(Board board, Player player)
+}
+
+class Archeologist {
+    + void Use_ability(Board board, Player player)
+}
+
+class Digger {
+    + void Use_ability(Board board, Player player)
+}
+
+class Professor {
+    + void Use_ability(Board board, Player player)
+}
+
+class Coder {
+    + void Use_ability(Board board, Player player)
+}
+
+' ==========================================
+' 4. View Class
+' ==========================================
+class GameView extends JFrame {
+    - JLayeredPane boardPane
+    - JPanel playerArea
+    - JButton drawButton
+    - JButton endTurnButton
+    - JLabel infoLabel
+    - Controller controller
+
+    + GameView(Controller c)
+    + void updateView()
+    + void setDrawButtonListener(ActionListener l)
+    + void setEndTurnListener(ActionListener l)
+    + void showMessage(String text)
+}
+
+' ==========================================
+' 5. Controller Class
+' ==========================================
+class Controller {
+    - ArrayList<Player> players
+    - int currentPlayerIndex
+    - Bag bag
+    - Board board
+    - boolean gameFinished
+    - GameView view
+
+    + void startGame()
+    + void startTurn()
+    + void endTurn()
+    - void handleLandslide(LandslideTile t)
+    - void checkGameOver()
+    + void saveGame(String filePath)
+    + void loadGame(String filePath)
+}
+
+' ==========================================
+' 6. Relationships
+' ==========================================
+
+' --- Inheritance ---
+Tile <|-- LandslideTile
+Tile <|-- FindingTile
+
+FindingTile <|-- MosaicTile
+FindingTile <|-- AmphoraTile
+FindingTile <|-- SkeletonTile
+FindingTile <|-- StatueTile
+
+Character <|-- Assistant
+Character <|-- Archeologist
+Character <|-- Digger
+Character <|-- Professor
+Character <|-- Coder
+
+Zone <|-- EntranceZone
+
+' --- Composition & Aggregation ---
+Controller "1" *-- "1" Board
+Controller "1" *-- "1" Bag
+Controller "1" *-- "4" Player
+Controller "1" --> "1" GameView : controls
+
+Player "1" *-- "5" Character : owns
+Player "1" o-- "0..*" Tile : collects
+Bag "1" o-- "1..*" Tile : contains
+Zone "1" o-- "0..*" Tile : holds
+Board "1" *-- "5" Zone : contains
+
+' --- Dependency ---
+GameView --> "1" Controller : queries
+Character ..> Board : uses
+Character ..> Player : uses
+
+@enduml
