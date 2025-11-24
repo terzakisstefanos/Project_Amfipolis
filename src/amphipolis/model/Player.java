@@ -3,8 +3,13 @@ package amphipolis.model;
 import java.util.ArrayList;
 
 /**
- * Represents a player in the game.
- * Each player has a name, a score, an inventory of tiles, and a set of character cards.
+ * Represents a single player in the game.
+ * Maintains the state of the user, including their personal inventory of collected tiles,
+ * their assigned character cards, and their current score.
+ *
+ * <b>Invariant:</b> The player's score must always be non-negative.
+ * <b>Invariant:</b> The player owns exactly 5 Character cards of a specific color.
+ * <b>Invariant:</b> The collected tiles list is never null (though it may be empty).
  */
 public class Player {
 

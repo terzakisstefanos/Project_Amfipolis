@@ -1,5 +1,11 @@
 package amphipolis.model;
-
+/**
+ * Abstract class representing a Character card owned by a player.
+ * Defines the common state (name, usage status) and the abstract interface for special abilities.
+ *
+ * <b>Invariant:</b> A character belongs to exactly one player.
+ * <b>Invariant:</b> A character can be in only one of two states: "Active" or "Used". Once used, it cannot return to active status in the same game.
+ */
 public abstract class Character {
 
     private String name;

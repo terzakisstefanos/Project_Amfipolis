@@ -1,7 +1,13 @@
 package amphipolis.model;
 
 import java.util.ArrayList;
-
+/**
+ * Represents a generic area on the board where tiles can be placed and drawn.
+ * Functions as a dynamic collection (First-In-Last-Out or generic collection) of tiles.
+ *
+ * <b>Invariant:</b> The internal list of tiles is never null.
+ * <b>Invariant:</b> The zone stores generic Tile objects, allowing for polymorphism (holding Mosaics, Amphoras, etc.).
+ */
 public class Zone {
 
     /**

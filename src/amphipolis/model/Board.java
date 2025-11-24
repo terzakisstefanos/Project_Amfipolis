@@ -1,9 +1,10 @@
 package amphipolis.model;
-
 /**
- * Represents the game board.
- * Holds the 5 different zones (Mosaic, Amphora, Skeleton, Statue, Entrance)
- * and manages the placement of tiles.
+ * Represents the game board of Amphipolis.
+ * Acts as the central container for the five distinct zones (Mosaic, Amphora, Skeleton, Statue, Entrance).
+ *
+ * <b>Invariant:</b> The board must always contain exactly 5 instantiated zones.
+ * <b>Invariant:</b> The Entrance Zone is distinct from the other four "Finding" zones.
  */
 public class Board {
 

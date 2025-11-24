@@ -1,5 +1,11 @@
 package amphipolis.model;
-
+/**
+ * Abstract base class for all game tiles (Landslide and Finding tiles).
+ * Defines the essential properties shared by all tiles, such as the visual asset path.
+ *
+ * <b>Invariant:</b> The image path string must not be null or empty.
+ * <b>Invariant:</b> Every concrete subclass must implement a point calculation strategy.
+ */
 public abstract class Tile {
     private String imagePath;
     /**
@@ -25,4 +31,4 @@ public abstract class Tile {
     public abstract int calculatePoints();
 }
 
-}
+
