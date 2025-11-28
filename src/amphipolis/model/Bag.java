@@ -1,6 +1,8 @@
 package amphipolis.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Represents the bag containing all unassigned tiles in the game.
  * Responsible for securely storing tiles and providing them randomly to players.
@@ -17,17 +19,18 @@ public class Bag {
      * * <b>Post-condition:</b> The bag contains exactly the number of tiles specified in the rules.
      */
     public Bag() {
-        for(int i=0; i<24;i++){
+        this.contents = new ArrayList<Tile>();
+        for (int i = 0; i < 24; i++) {
             contents.add(new LandslideTile("images/landslide.png"));
         }
-        for(int i=0; i<9;i++) {
-            contents.add(new MosaicTile("images/mosaic_green.png",Color.GREEN));
-            contents.add(new MosaicTile("images/mosaic_red.png",Color.RED));
-            contents.add(new MosaicTile("images/mosaic_yellow.png",Color.YELLOW));
+        for (int i = 0; i < 9; i++) {
+            contents.add(new MosaicTile("images/mosaic_green.png", Color.GREEN));
+            contents.add(new MosaicTile("images/mosaic_red.png", Color.RED));
+            contents.add(new MosaicTile("images/mosaic_yellow.png", Color.YELLOW));
         }
-        for(int i=0; i<12; i++){
-            contents.add(new StatueTile("images/sphinx.png",true));
-            contents.add(new StatueTile("images/caryatid.png",false));
+        for (int i = 0; i < 12; i++) {
+            contents.add(new StatueTile("images/sphinx.png", true));
+            contents.add(new StatueTile("images/caryatid.png", false));
         }
         for (Color c : Color.values()) {
             for (int i = 0; i < 5; i++) {
@@ -44,6 +47,7 @@ public class Bag {
             contents.add(new SkeletonTile("images/skeleton_small_top.png", SkeletonType.SMALL, SkeletonPart.UPPER));
             contents.add(new SkeletonTile("images/skeleton_small_bottom.png", SkeletonType.SMALL, SkeletonPart.LOWER));
         }
+        Collections.shuffle(contents);
     }
 
     /**
@@ -53,14 +57,18 @@ public class Bag {
      * * @return A random Tile object.
      */
     public Tile drawRandomTile() {
-        return null; // TODO: IMPLEMENT IT
+        if(isEmpty()){
+            return null;
+        }
+        return contents.remove(contents.size()-1);
     }
 
     /**
      * Checks if the bag is empty.
+     *
      * @return true if no tiles remain, false otherwise.
      */
     public boolean isEmpty() {
-        return false;
+        return contents.isEmpty();
     }
 }

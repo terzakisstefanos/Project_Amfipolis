@@ -1,6 +1,7 @@
 package amphipolis.model;
 
 import java.util.ArrayList;
+
 /**
  * Represents a generic area on the board where tiles can be placed and drawn.
  * Functions as a dynamic collection (First-In-Last-Out or generic collection) of tiles.
@@ -30,7 +31,10 @@ public class Zone {
      * * @param t The tile object to add.
      */
     public void addTile(Tile t) {
-        // TODO: IMPLEMENT IT
+        if (t != null) {
+            tiles.add(t);
+        }
+        return;
     }
 
     /**
@@ -40,7 +44,10 @@ public class Zone {
      * * @return The tile that was removed.
      */
     public Tile removeTile() {
-        return null;
+        if (isEmpty()) {
+            return null;
+        }
+        return tiles.remove(tiles.size()-1);
     }
 
     /**
@@ -55,6 +62,7 @@ public class Zone {
 
     /**
      * Checks if the zone is empty.
+     *
      * @return true if size is 0, false otherwise.
      */
     public boolean isEmpty() {
