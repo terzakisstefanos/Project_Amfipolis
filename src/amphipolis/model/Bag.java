@@ -17,7 +17,33 @@ public class Bag {
      * * <b>Post-condition:</b> The bag contains exactly the number of tiles specified in the rules.
      */
     public Bag() {
-        // TODO: IMPLEMENT IT
+        for(int i=0; i<24;i++){
+            contents.add(new LandslideTile("images/landslide.png"));
+        }
+        for(int i=0; i<9;i++) {
+            contents.add(new MosaicTile("images/mosaic_green.png",Color.GREEN));
+            contents.add(new MosaicTile("images/mosaic_red.png",Color.RED));
+            contents.add(new MosaicTile("images/mosaic_yellow.png",Color.YELLOW));
+        }
+        for(int i=0; i<12; i++){
+            contents.add(new StatueTile("images/sphinx.png",true));
+            contents.add(new StatueTile("images/caryatid.png",false));
+        }
+        for (Color c : Color.values()) {
+            for (int i = 0; i < 5; i++) {
+                // Dynamically creating the path: "images/amphora_blue.png", etc.
+                String path = "images/amphora_" + c.toString().toLowerCase() + ".png";
+                contents.add(new AmphoraTile(path, c));
+            }
+        }
+        for (int i = 0; i < 10; i++) {
+            contents.add(new SkeletonTile("images/skeleton_big_top.png", SkeletonType.BIG, SkeletonPart.UPPER));
+            contents.add(new SkeletonTile("images/skeleton_big_bottom.png", SkeletonType.BIG, SkeletonPart.LOWER));
+        }
+        for (int i = 0; i < 5; i++) {
+            contents.add(new SkeletonTile("images/skeleton_small_top.png", SkeletonType.SMALL, SkeletonPart.UPPER));
+            contents.add(new SkeletonTile("images/skeleton_small_bottom.png", SkeletonType.SMALL, SkeletonPart.LOWER));
+        }
     }
 
     /**
