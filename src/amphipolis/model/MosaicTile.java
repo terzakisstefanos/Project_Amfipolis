@@ -22,8 +22,4 @@ public class MosaicTile extends FindingTile {
         return color;
     }
 
-    @Override
-    public int calculatePoints() {
-        return 0; // Phase B: Scoring is handled by Player (sets of 4)
-    }
 }

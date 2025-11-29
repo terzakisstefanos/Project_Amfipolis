@@ -1,12 +1,7 @@
 package amphipolis.controller;
 
-import amphipolis.model.Bag;
-import amphipolis.model.Board;
-import amphipolis.model.EntranceZone;
-import amphipolis.model.LandslideTile;
-import amphipolis.model.Player;
-// TODO: IMPLEMENT IT:  import GameView in Phase B
-// import amphipolis.view.GameView;
+import amphipolis.model.*;
+import amphipolis.view.GameView;
 
 import java.util.ArrayList;
 
@@ -26,7 +21,10 @@ public class Controller {
     private Bag bag;
     private Board board;
     private boolean gameFinished;
-    // private GameView view; // Uncomment in Phase B
+    private GameView view;
+    private Player thief;
+    private boolean isSinglePlayer;
+
 
     /**
      * Starts the game setup process.
@@ -100,5 +98,10 @@ public class Controller {
      */
     public void loadGame(String filePath) {
         //TODO: Use ObjectInputStream to read data
+    }
+    public Zone selectzone (Board board){
+        // we call the view
+
+        return Zone;
     }
 }

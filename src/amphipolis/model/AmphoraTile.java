@@ -22,8 +22,4 @@ public class AmphoraTile extends FindingTile {
         return color;
     }
 
-    @Override
-    public int calculatePoints() {
-        return 0; // Phase B: Implement the "Set Collection" scoring logic
-    }
 }

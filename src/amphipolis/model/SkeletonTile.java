@@ -30,8 +30,4 @@ public class SkeletonTile extends FindingTile {
         return part;
     }
 
-    @Override
-    public int calculatePoints() {
-        return 0; // Phase B: Implement matching logic
-    }
 }

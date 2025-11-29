@@ -22,8 +22,4 @@ public class StatueTile extends FindingTile {
         return isSphinx;
     }
 
-    @Override
-    public int calculatePoints() {
-        return 0; // Phase B: Implement Majority scoring logic
-    }
 }

@@ -1,4 +1,5 @@
 package amphipolis.model;
+
 /**
  * Represents the game board of Amphipolis.
  * Acts as the central container for the five distinct zones (Mosaic, Amphora, Skeleton, Statue, Entrance).
@@ -19,13 +20,17 @@ public class Board {
      * <b>Post-condition:</b> All zones are instantiated and empty.
      */
     public void init() {
-        // TODO: IMPLEMENT IT
-        // mosaicZone = new Zone();
+        this.mosaicZone = new Zone();
+        this.amphoraZone = new Zone();
+        this.skeletonZone = new Zone();
+        this.statueZone = new Zone();
+        this.entranceZone = new EntranceZone();
     }
 
     /**
-     * Accessor for the Mosaic Zone.
-     * @return The Zone object responsible for Mosaic tiles.
+     * Accessor for all the Zones.
+     *
+     * @return The Zone object responsible for the tiles.
      */
     public Zone getMosaicZone() {
         return mosaicZone;
@@ -45,6 +50,7 @@ public class Board {
 
     /**
      * Accessor for the special Entrance Zone.
+     *
      * @return The EntranceZone object.
      */
     public EntranceZone getEntranceZone() {

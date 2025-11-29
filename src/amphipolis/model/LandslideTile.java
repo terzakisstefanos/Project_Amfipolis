@@ -10,13 +10,4 @@ public class LandslideTile extends Tile {
         super(imagePath);
     }
 
-    /**
-     * Calculates points for this tile.
-     * <b>Post-condition:</b> Always returns 0.
-     * @return 0
-     */
-    @Override
-    public int calculatePoints() {
-        return 0;
-    }
 }

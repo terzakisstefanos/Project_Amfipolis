@@ -24,11 +24,7 @@ public abstract class Tile {
     public String getImagePath() {
         return imagePath;
     }
-    /**
-     * <b>Post-condition:</b> Returns the integer score value.
-     * @return The points this tile contributes to the player's score.
-     */
-    public abstract int calculatePoints();
+;
 }
 
 
