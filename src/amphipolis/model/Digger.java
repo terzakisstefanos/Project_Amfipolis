@@ -9,7 +9,7 @@ import amphipolis.controller.Controller;
 public class Digger extends Character {
 
     @Override
-    public void useAbility(Player player) {
+    public void useAbility(Board board,Player player) {
         Zone zone=player.getLastVisitedZone();
         assert zone != null;
         if (!zone.isEmpty()) {

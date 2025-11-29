@@ -1,6 +1,6 @@
 package amphipolis.model;
 
-import amphipolis.controller.Controller;
+import java.util.ArrayList;
 
 /**
  * Represents the Professor character card.
@@ -10,13 +10,21 @@ import amphipolis.controller.Controller;
 public class Professor extends Character {
 
     @Override
-    public void useAbility(Player player) {
-        Zone zone = Controller.selectZone(player.getLastVisitedZone(), false);
-        assert zone != null;
-        if (!zone.isEmpty()) {
-            Tile drawnTile = zone.removeTile();
-            player.addTile(drawnTile);
-            setUsed();
+    public void useAbility(Board board, Player player) {
+        ArrayList<Zone> zones = new ArrayList<>();
+        zones.add(board.getMosaicZone());
+        zones.add(board.getAmphoraZone());
+        zones.add(board.getSkeletonZone());
+        zones.add(board.getStatueZone());
+
+        Zone forbidden = player.getLastVisitedZone();
+
+        for (Zone z : zones) {
+            if (z != forbidden && !z.isEmpty()) {
+                Tile t = z.removeTile();
+                player.addTile(t);
+            }
         }
+        setUsed();
     }
 }

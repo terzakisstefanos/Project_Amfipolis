@@ -16,7 +16,7 @@ public class Assistant extends Character {
      *
      * @param player The player performing the action.
      */
-    public void useAbility(Player player) {
+    public void useAbility(Board board,Player player) {
         Zone zone = Controller.selectZone(null, true);
         assert zone != null;
         if (!zone.isEmpty()) {

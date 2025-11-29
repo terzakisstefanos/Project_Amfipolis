@@ -9,7 +9,7 @@ import amphipolis.controller.Controller;
 public class Coder extends Character {
 
     @Override
-    public void useAbility(Player player) {
+    public void useAbility(Board board,Player player) {
         Zone zone = Controller.selectZone(null, true);
         player.setCoderReservedZone(zone);
 
