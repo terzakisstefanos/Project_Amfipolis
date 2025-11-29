@@ -7,11 +7,14 @@ import amphipolis.controller.Controller;
  * Ability: Allows the player to reserve an area to draw extra tiles in the next turn.
  */
 public class Coder extends Character {
+    public Coder() {
+        super("Coder");
+    }
 
     @Override
-    public void useAbility(Board board,Player player) {
-        Zone zone = Controller.selectZone(null, true);
+    public void useAbility(Player player, Controller controller) {
+        Zone zone = controller.selectZone(null, true);
         player.setCoderReservedZone(zone);
-
+        setUsed();
     }
 }

@@ -2,34 +2,37 @@ package amphipolis.model;
 
 import amphipolis.controller.Controller;
 
-import java.util.ArrayList;
-
 /**
  * Represents the Archaeologist character card.
  * Ability: The player takes up to 2 tiles from any area, EXCEPT the one they drew from earlier.
  */
 public class Archaeologist extends Character {
 
+    public Archaeologist() {
+        super("Archaeologist");
+    }
+
     @Override
-    public void useAbility(Board board, Player player) {
-        ArrayList<Zone> zones = new ArrayList<>();
-        zones.add(board.getMosaicZone());
-        zones.add(board.getAmphoraZone());
-        zones.add(board.getSkeletonZone());
-        zones.add(board.getStatueZone());
-        Zone forbidden = player.getLastVisitedZone();
-        for (Zone z : zones) {
-            if (z != forbidden && !z.isEmpty()) {
-                Tile t = z.removeTile();
-                player.addTile(t);
-        if (Controller.howmany() == 2) {
-            if (!z.isEmpty()) {// check again because it is possible that only one tile exists
-                Tile drawnTile = z.removeTile();
-                player.addTile(drawnTile);
+    public void useAbility(Player player, Controller controller) {
+        // 1. Ask player to pick ONE zone (excluding the last visited one)
+        Zone zone = controller.selectZone(player.getLastVisitedZone(), false);
+
+        // 2. If a valid zone is selected and not empty
+        if (zone != null && !zone.isEmpty()) {
+
+            // Take the first tile
+            Tile drawnTile1 = zone.removeTile();
+            player.addTile(drawnTile1);
+
+            // Check if they want a second one AND if there are tiles left in THAT SAME zone
+            if (!zone.isEmpty()) {
+                if (controller.howmany() == 2) {
+                    Tile drawnTile2 = zone.removeTile();
+                    player.addTile(drawnTile2);
+                }
             }
+
+            setUsed();
         }
-            }
-        }
-        setUsed();
     }
 }

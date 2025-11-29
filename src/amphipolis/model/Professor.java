@@ -1,5 +1,7 @@
 package amphipolis.model;
 
+import amphipolis.controller.Controller;
+
 import java.util.ArrayList;
 
 /**
@@ -9,8 +11,13 @@ import java.util.ArrayList;
  */
 public class Professor extends Character {
 
+    public Professor() {
+        super("Professor");
+    }
+
     @Override
-    public void useAbility(Board board, Player player) {
+    public void useAbility(Player player,Controller controller) {
+        Board board=controller.getBoard();
         ArrayList<Zone> zones = new ArrayList<>();
         zones.add(board.getMosaicZone());
         zones.add(board.getAmphoraZone());

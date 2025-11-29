@@ -8,16 +8,23 @@ import amphipolis.controller.Controller;
  */
 public class Digger extends Character {
 
+    public Digger() {
+        super("Digger");
+    }
+
     @Override
-    public void useAbility(Board board,Player player) {
-        Zone zone=player.getLastVisitedZone();
+    public void useAbility(Player player, Controller controller) {
+        Zone zone = player.getLastVisitedZone();
         assert zone != null;
+
         if (!zone.isEmpty()) {
             Tile drawnTile = zone.removeTile();
             player.addTile(drawnTile);
         }
-        if (Controller.howmany() == 2) {
-            if (!zone.isEmpty()) {
+
+        // Check again if not empty before asking for second tile
+        if (!zone.isEmpty()) {
+            if (controller.howmany() == 2) {
                 Tile drawnTile = zone.removeTile();
                 player.addTile(drawnTile);
             }

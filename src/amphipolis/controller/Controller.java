@@ -9,7 +9,6 @@ import java.util.ArrayList;
  * The Controller class acts as the central coordinator (Brain) of the MVC architecture.
  * It manages the game loop, enforces rules (turn order, landslide mechanics), and synchronizes
  * the Model state with the View.
- *
  * <b>Invariant:</b> There is always exactly one active player during a turn.
  * <b>Invariant:</b> The game state (playing vs. finished) is explicitly tracked.
  * <b>Invariant:</b> The Controller maintains a valid reference to the Board and the Players throughout the game lifecycle.
@@ -19,7 +18,7 @@ public class Controller {
     private ArrayList<Player> players;
     private int currentPlayerIndex;
     private Bag bag;
-    private static Board board;
+    private Board board;
     private boolean gameFinished;
     private GameView view;
     private Player thief;
@@ -99,12 +98,13 @@ public class Controller {
     public void loadGame(String filePath) {
         //TODO: Use ObjectInputStream to read data
     }
-
     /**
      * Prompts the user to select a zone via the View.
+     * @param forbiddenZone The zone the player visited previously (can be null).
+     * @param ignoreForbidden If true, the forbiddenZone restriction is ignored (e.g. Assistant).
      * @return The selected Zone object.
      */
-    public static Zone selectZone() {
+    public Zone selectZone(Zone forbiddenZone, boolean ignoreForbidden) {
         Zone selectedZone = null;
         boolean validSelection = false;
 
@@ -115,10 +115,10 @@ public class Controller {
                 case 1: selectedZone = board.getAmphoraZone(); break;
                 case 2: selectedZone = board.getSkeletonZone(); break;
                 case 3: selectedZone = board.getStatueZone(); break;
-                default: return null; // if the window is closed
+                default: return null;
             }
-            if (selectedZone == null) {// check if the choice is valid
-                view.showErrorMessage("You must select a zone or the game cant continue");
+            if (!ignoreForbidden && selectedZone != null && selectedZone == forbiddenZone) {
+                view.showErrorMessage("You cannot select this Zone again this turn");
             } else {
                 validSelection = true;
             }
@@ -132,7 +132,11 @@ public class Controller {
      *
      * @return The number of tiles selected by the user (1 or 2).
      */
-    public static int howmany() {
+    public  int howmany() {
         return view.promptTileCount();
+    }
+
+    public Board getBoard() {
+        return board;
     }
 }

@@ -1,7 +1,6 @@
 package amphipolis.model;
 
 import amphipolis.controller.Controller;
-import amphipolis.controller.Controller.*;
 
 /**
  * Represents the Assistant character card.
@@ -9,15 +8,13 @@ import amphipolis.controller.Controller.*;
  */
 public class Assistant extends Character {
 
-    /**
-     * Executes the Assistant's special ability.
-     * <b>Post-condition:</b> The player adds 1 tile from the selected zone to their inventory.
-     * The character is marked as used.
-     *
-     * @param player The player performing the action.
-     */
-    public void useAbility(Board board,Player player) {
-        Zone zone = Controller.selectZone(null, true);
+    public Assistant() {
+        super("Assistant");
+    }
+
+    @Override
+    public void useAbility(Player player, Controller controller) {
+        Zone zone = controller.selectZone(null, true);
         assert zone != null;
         if (!zone.isEmpty()) {
             Tile drawnTile = zone.removeTile();
