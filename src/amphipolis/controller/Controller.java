@@ -102,11 +102,9 @@ public class Controller {
 
     /**
      * Prompts the user to select a zone via the View.
-     * @param forbiddenZone The zone the player visited previously (can be null).
-     * @param ignoreForbidden If true, the forbiddenZone restriction is ignored (e.g. Assistant).
      * @return The selected Zone object.
      */
-    public static Zone selectZone(Zone forbiddenZone, boolean ignoreForbidden) {
+    public static Zone selectZone() {
         Zone selectedZone = null;
         boolean validSelection = false;
 
@@ -117,10 +115,10 @@ public class Controller {
                 case 1: selectedZone = board.getAmphoraZone(); break;
                 case 2: selectedZone = board.getSkeletonZone(); break;
                 case 3: selectedZone = board.getStatueZone(); break;
-                default: return null; // TODO: make it so it throws exception because if the the window is closed the game cannot continue
+                default: return null; // if the window is closed
             }
-            if (!ignoreForbidden && selectedZone != null && selectedZone == forbiddenZone) {// check if the choice is valid
-                view.showErrorMessage("You cannot select this Zone again this turn");
+            if (selectedZone == null) {// check if the choice is valid
+                view.showErrorMessage("You must select a zone or the game cant continue");
             } else {
                 validSelection = true;
             }
