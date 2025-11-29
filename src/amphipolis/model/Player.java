@@ -6,7 +6,6 @@ import java.util.ArrayList;
  * Represents a single player in the game.
  * Maintains the state of the user, including their personal inventory of collected tiles,
  * their assigned character cards, and their current score.
- *
  * <b>Invariant:</b> The player's score must always be non-negative.
  * <b>Invariant:</b> The player owns exactly 5 Character cards of a specific color.
  * <b>Invariant:</b> The collected tiles list is never null (though it may be empty).
@@ -17,6 +16,8 @@ public class Player {
     private int score;
     private ArrayList<Tile> collectedTiles;
     private Character[] myCharacters;
+    private Zone lastVisitedZone;
+    private Zone coderReservedZone;
 
     /**
      * Constructor for the Player.
@@ -28,6 +29,48 @@ public class Player {
         this.score = 0;
         this.collectedTiles = new ArrayList<>();
         this.myCharacters = new Character[5];
+        this.lastVisitedZone = null;
+        this.coderReservedZone = null;
+    }
+    /**
+     * Gets the zone the player visited during the standard action of the current turn.
+     * This is used to enforce restrictions for characters like the Archaeologist.
+     *
+     * @return The zone visited this turn, or null if reset or not yet selected.
+     */
+    public Zone getLastVisitedZone() {
+        return lastVisitedZone;
+    }
+
+    /**
+     * Sets the zone the player visited during the current turn.
+     * This should be reset to null at the start of every new turn.
+     *
+     * @param lastVisitedZone The zone to mark as visited.
+     */
+    public void setLastVisitedZone(Zone lastVisitedZone) {
+        this.lastVisitedZone = lastVisitedZone;
+    }
+
+    /**
+     * Gets the zone reserved by the Coder character in the previous turn.
+     * If this returns a non-null value, the player is entitled to extra tiles
+     * from this zone at the start of their turn.
+     *
+     * @return The reserved zone, or null if no reservation exists.
+     */
+    public Zone getCoderReservedZone() {
+        return coderReservedZone;
+    }
+
+    /**
+     * Sets the zone reserved by the Coder character for the next turn.
+     * <b>Post-condition:</b> This selection persists across the round until the player's next turn.
+     *
+     * @param coderReservedZone The zone to reserve.
+     */
+    public void setCoderReservedZone(Zone coderReservedZone) {
+        this.coderReservedZone = coderReservedZone;
     }
 
     /**

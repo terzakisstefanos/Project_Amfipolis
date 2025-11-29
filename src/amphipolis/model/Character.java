@@ -30,8 +30,7 @@ public abstract class Character {
     /**
      * Abstract method that executes the character's special ability.
      *
-     * @param board The game board (source of tiles).
      * @param player The player using the card (recipient of tiles).
      */
-    public abstract void useAbility(Board board, Player player);
+    public abstract void useAbility(Player player);
 }

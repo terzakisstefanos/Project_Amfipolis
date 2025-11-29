@@ -19,7 +19,7 @@ public class Controller {
     private ArrayList<Player> players;
     private int currentPlayerIndex;
     private Bag bag;
-    private Board board;
+    private static Board board;
     private boolean gameFinished;
     private GameView view;
     private Player thief;
@@ -99,9 +99,42 @@ public class Controller {
     public void loadGame(String filePath) {
         //TODO: Use ObjectInputStream to read data
     }
-    public Zone selectzone (Board board){
-        // we call the view
 
-        return Zone;
+    /**
+     * Prompts the user to select a zone via the View.
+     * @param forbiddenZone The zone the player visited previously (can be null).
+     * @param ignoreForbidden If true, the forbiddenZone restriction is ignored (e.g. Assistant).
+     * @return The selected Zone object.
+     */
+    public static Zone selectZone(Zone forbiddenZone, boolean ignoreForbidden) {
+        Zone selectedZone = null;
+        boolean validSelection = false;
+
+        while (!validSelection) {
+            int choice = view.promptZoneSelection();
+            switch (choice) {
+                case 0: selectedZone = board.getMosaicZone(); break;
+                case 1: selectedZone = board.getAmphoraZone(); break;
+                case 2: selectedZone = board.getSkeletonZone(); break;
+                case 3: selectedZone = board.getStatueZone(); break;
+                default: return null; // TODO: make it so it throws exception because if the the window is closed the game cannot continue
+            }
+            if (!ignoreForbidden && selectedZone != null && selectedZone == forbiddenZone) {// check if the choice is valid
+                view.showErrorMessage("You cannot select this Zone again this turn");
+            } else {
+                validSelection = true;
+            }
+        }
+
+        return selectedZone;
+    }
+    /**
+     * Prompts the user to select how many tiles they want to draw.
+     * typically used for the Digger character.
+     *
+     * @return The number of tiles selected by the user (1 or 2).
+     */
+    public static int howmany() {
+        return view.promptTileCount();
     }
 }
