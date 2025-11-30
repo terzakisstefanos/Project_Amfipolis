@@ -63,4 +63,34 @@ public class GameView extends JFrame {
         // 2. Clear old icons from JLayeredPane
         // 3. Redraw tiles in their new positions
     }
+
+    public boolean promptLoadGame() {
+        return false;
+    }
+
+    public int promptLoadType() {
+        return 0;
+    }
+
+    public String promptFileSelection() {
+        return "";
+    }
+
+    public void showMessage(String s) {
+    }
+
+    public int promptPlayerCount() {
+        return 0;
+    }
+
+    public int promptZoneSelection() {
+        return 0;
+    }
+
+    public void showErrorMessage(String s) {
+    }
+
+    public int promptTileCount() {
+        return 0;
+    }
 }

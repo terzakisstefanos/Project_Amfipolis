@@ -31,7 +31,43 @@ public class Controller {
      * <b>Post-condition:</b> Initializes Players, Board, Bag, and starts the first turn.
      */
     public void startGame() {
-        // TODO: IMPLEMENT Logic to init everything
+        this.view = new GameView(this);
+        boolean wantToLoad = view.promptLoadGame();
+        if (wantToLoad) {
+            int loadType = view.promptLoadType(); // 0 = Last Saved, 1 = Custom File
+
+            String path = null;
+            if (loadType == 0) {
+                path = "last_save.ser";
+            } else if (loadType == 1) {
+                path = view.promptFileSelection();
+            }
+
+            if (path != null) {
+                loadGame(path);
+                view.updateView();
+                return;
+            } else {
+                view.showMessage("No file selected. Starting new game.");
+            }
+        }
+        this.bag = new Bag();
+        this.board = new Board();
+        this.board.init();
+        this.gameFinished = false;
+        this.players = new ArrayList<>();
+        int numPlayers = view.promptPlayerCount();
+        this.isSinglePlayer = (numPlayers == 1);
+        for (int i = 1; i <= numPlayers; i++) {
+            players.add(new Player("Player " + i));
+        }
+        if (isSinglePlayer) {
+            this.thief = new Player("Thief");
+            players.add(thief);
+        }
+        this.currentPlayerIndex = 0;
+        view.updateView();
+        startTurn();
     }
 
     /**
@@ -40,12 +76,37 @@ public class Controller {
      * <b>Post-condition:</b> The current player draws 4 tiles. If a Landslide occurs, handleLandslide is called.
      */
     public void startTurn() {
-        // TODO: IMPLEMENT IT
-        // 1. Identify current player
-        // 2. Draw 4 tiles from Bag
-        // 3. Loop through tiles:
-        //    if (tile instanceof LandslideTile) -> handleLandslide((LandslideTile) tile)
-        //    else -> Place in correct Board Zone
+        Player current = players.get(currentPlayerIndex);
+        for (int i = 0; i < 4; i++) {
+            Tile tile = bag.drawRandomTile();
+
+            if (tile != null) {
+                if (tile.getClass() == MosaicTile.class) {
+                    board.getMosaicZone().addTile(tile);
+                } else if (tile.getClass() == AmphoraTile.class) {
+                    board.getAmphoraZone().addTile(tile);
+                } else if (tile.getClass() == SkeletonTile.class) {
+                    board.getSkeletonZone().addTile(tile);
+                } else if (tile.getClass() == StatueTile.class) {
+                    board.getStatueZone().addTile(tile);
+                } else if (tile.getClass() == LandslideTile.class) {
+                    handleLandslide((LandslideTile) tile);
+                }
+            }
+        }
+        Zone zone = selectZone(null, true);
+        assert zone != null;
+        if (!zone.isEmpty()) {
+            Tile drawnTile = zone.removeTile();
+            players.get(currentPlayerIndex).addTile(drawnTile);
+        }
+        // Check again if not empty before asking for second tile
+        if (!zone.isEmpty()) {
+            Tile drawnTile = zone.removeTile();
+            players.get(currentPlayerIndex).addTile(drawnTile);
+        }
+
+        // todo pick 2 tiles
     }
 
     /**
@@ -54,7 +115,11 @@ public class Controller {
      * <b>Post-condition:</b> Control passes to the next player index. startTurn() is called for them.
      */
     public void endTurn() {
-        // TODO: IMPLEMENT IT currentPlayerIndex++ (wrap around to 0)
+        currentPlayerIndex++;
+        if (currentPlayerIndex >= players.size()) {
+            currentPlayerIndex = 0;
+        }
+        startTurn();
     }
 
     /**
@@ -98,9 +163,11 @@ public class Controller {
     public void loadGame(String filePath) {
         //TODO: Use ObjectInputStream to read data
     }
+
     /**
      * Prompts the user to select a zone via the View.
-     * @param forbiddenZone The zone the player visited previously (can be null).
+     *
+     * @param forbiddenZone   The zone the player visited previously (can be null).
      * @param ignoreForbidden If true, the forbiddenZone restriction is ignored (e.g. Assistant).
      * @return The selected Zone object.
      */
@@ -111,11 +178,20 @@ public class Controller {
         while (!validSelection) {
             int choice = view.promptZoneSelection();
             switch (choice) {
-                case 0: selectedZone = board.getMosaicZone(); break;
-                case 1: selectedZone = board.getAmphoraZone(); break;
-                case 2: selectedZone = board.getSkeletonZone(); break;
-                case 3: selectedZone = board.getStatueZone(); break;
-                default: return null;
+                case 0:
+                    selectedZone = board.getMosaicZone();
+                    break;
+                case 1:
+                    selectedZone = board.getAmphoraZone();
+                    break;
+                case 2:
+                    selectedZone = board.getSkeletonZone();
+                    break;
+                case 3:
+                    selectedZone = board.getStatueZone();
+                    break;
+                default:
+                    return null;
             }
             if (!ignoreForbidden && selectedZone != null && selectedZone == forbiddenZone) {
                 view.showErrorMessage("You cannot select this Zone again this turn");
@@ -126,13 +202,14 @@ public class Controller {
 
         return selectedZone;
     }
+
     /**
      * Prompts the user to select how many tiles they want to draw.
      * typically used for the Digger character.
      *
      * @return The number of tiles selected by the user (1 or 2).
      */
-    public  int howmany() {
+    public int howmany() {
         return view.promptTileCount();
     }
 
