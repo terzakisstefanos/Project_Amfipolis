@@ -8,7 +8,7 @@ import amphipolis.controller.Controller;
  * <b>Invariant:</b> A character belongs to exactly one player.
  * <b>Invariant:</b> A character can be in only one of two states: "Active" or "Used". Once used, it cannot return to active status in the same game.
  */
-public abstract class Character {
+public abstract class Character implements java.io.Serializable{
 
     private String name;
     private boolean isUsed;

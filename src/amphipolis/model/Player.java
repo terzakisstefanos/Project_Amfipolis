@@ -172,4 +172,15 @@ public class Player {
     public void addTile(Tile t) {
         collectedTiles.add(t);
     }
+
+    public Character[] getCharacters() {
+        return  myCharacters;
+    }
+    public int GetScore(){
+        return score;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

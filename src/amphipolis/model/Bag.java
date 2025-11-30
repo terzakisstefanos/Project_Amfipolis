@@ -10,7 +10,7 @@ import java.util.Collections;
  * <b>Invariant:</b> The number of tiles in the bag must always be non-negative.
  * <b>Invariant:</b> The bag is initialized with a specific fixed set of tiles as defined by the game rules.
  */
-public class Bag {
+public class Bag implements java.io.Serializable{
 
     private ArrayList<Tile> contents;
 

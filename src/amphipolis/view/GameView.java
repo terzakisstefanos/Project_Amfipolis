@@ -76,7 +76,11 @@ public class GameView extends JFrame {
         return "";
     }
 
-    public void showMessage(String s) {
+
+
+    public void showMessage(String text) {
+        // This one line of code creates the graphical popup window
+        JOptionPane.showMessageDialog(this, text, "Game Notification", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public int promptPlayerCount() {
@@ -92,5 +96,13 @@ public class GameView extends JFrame {
 
     public int promptTileCount() {
         return 0;
+    }
+
+    public int promptCharacterSelection() {
+        return 0;
+    }
+
+    public boolean promptUseCharacter() {
+        return false;
     }
 }

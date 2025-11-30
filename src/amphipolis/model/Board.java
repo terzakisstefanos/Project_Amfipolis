@@ -7,7 +7,7 @@ package amphipolis.model;
  * <b>Invariant:</b> The board must always contain exactly 5 instantiated zones.
  * <b>Invariant:</b> The Entrance Zone is distinct from the other four "Finding" zones.
  */
-public class Board {
+public class Board implements java.io.Serializable{
 
     private Zone mosaicZone;
     private Zone amphoraZone;

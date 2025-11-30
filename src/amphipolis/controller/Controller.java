@@ -1,8 +1,9 @@
 package amphipolis.controller;
 
 import amphipolis.model.*;
+import amphipolis.model.Character;
 import amphipolis.view.GameView;
-
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -31,6 +32,7 @@ public class Controller {
      * <b>Post-condition:</b> Initializes Players, Board, Bag, and starts the first turn.
      */
     public void startGame() {
+        //todo when we create the players we need to ask for their name maybe
         this.view = new GameView(this);
         boolean wantToLoad = view.promptLoadGame();
         if (wantToLoad) {
@@ -95,6 +97,7 @@ public class Controller {
             }
         }
         Zone zone = selectZone(null, true);
+        current.setLastVisitedZone(zone);
         assert zone != null;
         if (!zone.isEmpty()) {
             Tile drawnTile = zone.removeTile();
@@ -106,7 +109,27 @@ public class Controller {
             players.get(currentPlayerIndex).addTile(drawnTile);
         }
 
-        // todo pick 2 tiles
+        view.updateView(); // update the view
+        if (view.promptUseCharacter()) {
+            boolean validCharacterSelected = false;
+
+            while (!validCharacterSelected) {
+                int charIndex = view.promptCharacterSelection();
+                if (charIndex == -1) {
+                    break;
+                }
+                Character chosenChar = current.getCharacters()[charIndex];// select the chosen character
+                if (!chosenChar.getIsUsed()) {
+                    chosenChar.useAbility(current, this);
+                    validCharacterSelected = true;
+                    view.updateView();
+                } else {
+                    view.showErrorMessage("You have already used this character!");
+                }
+            }
+        }
+        view.updateView(); // update again
+        endTurn();
     }
 
     /**
@@ -127,10 +150,9 @@ public class Controller {
      * * @param t The landslide tile that was drawn.
      */
     private void handleLandslide(LandslideTile t) {
-        // TODO: IMPLEMENT IT
-        // 1. Add t to board.getEntranceZone()
-        // 2. Call checkGameOver(board.getEntranceZone())
-        // 3. FORCE END TURN (Player loses their action phase)
+        board.getEntranceZone().addTile(t);
+        checkGameOver(board.getEntranceZone());
+        endTurn();
     }
 
     /**
@@ -138,30 +160,116 @@ public class Controller {
      * * @param zone The entrance zone to check.
      * <b>Post-condition:</b> If zone.isFull() is true, gameFinished becomes true and winners are calculated.
      */
+    /**
+     * Checks if the game should end based on the Entrance Zone status.
+     * @param zone The entrance zone to check.
+     * <b>Post-condition:</b> If zone.isFull() is true, gameFinished becomes true and the GUI displays the results.
+     */
     private void checkGameOver(EntranceZone zone) {
         if (zone.isFull()) {
-            // TODO: IMPLEMENT Calculate scores and declare winner
+            this.gameFinished = true; // Set flag to stop further moves
+
+            // 1. Prepare the output String for the GUI
+            StringBuilder scoreboard = new StringBuilder();
+            scoreboard.append("GAME OVER!\n\n");
+            scoreboard.append("Final Scores:\n");
+            scoreboard.append("-----------------\n");
+
+            int maxScore = -1;
+            ArrayList<Player> winners = new ArrayList<>();
+
+            // 2. Calculate scores for everyone (including Thief if present)
+            for (Player p : players) {
+                int score = p.computePoints(); // Calculate final score
+                scoreboard.append(p.getName()).append(": ").append(score).append("\n");
+
+                // Determine winner(s)
+                if (score > maxScore) {
+                    maxScore = score;
+                    winners.clear();
+                    winners.add(p);
+                } else if (score == maxScore) {
+                    winners.add(p);
+                }
+            }
+
+            scoreboard.append("-----------------\n\n");
+
+            // 3. Add the winner announcement
+            if (winners.size() == 1) {
+                scoreboard.append("WINNER: ").append(winners.get(0).getName());
+            } else {
+                scoreboard.append("TIE BETWEEN: ");
+                for (int i = 0; i < winners.size(); i++) {
+                    scoreboard.append(winners.get(i).getName());
+                    if (i < winners.size() - 1) scoreboard.append(", ");
+                }
+            }
+
+            // 4. Send the final string to the View to display in a popup/dialog
+            view.showMessage(scoreboard.toString());
         }
     }
 
     /**
-     * Saves the current game state to a file.
-     * <b>Pre-condition:</b> The game is currently valid/running.
-     * <b>Post-condition:</b> A file is created at the specified path containing the serialized objects.
-     * * @param filePath The location to save the file.
+     * Saves the current game state to a file using Java Serialization.
+     * @param filePath The location to save the file (e.g., "saved_game.ser").
      */
     public void saveGame(String filePath) {
-        //TODO: Use ObjectOutputStream to write 'this' or specific objects
+        // Ensure the file has a proper extension
+        if (!filePath.endsWith(".ser")) {
+            filePath += ".ser";
+        }
+
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            // Write all necessary state objects in a specific order
+            out.writeObject(players);
+            out.writeInt(currentPlayerIndex);
+            out.writeObject(bag);
+            out.writeObject(board);
+            out.writeBoolean(gameFinished);
+            out.writeObject(thief);
+            out.writeBoolean(isSinglePlayer);
+
+            // Note: We DO NOT save the 'view' because GUI components are not serializable.
+            // We only save the data (Model).
+
+            view.showMessage("Game saved successfully to " + filePath);
+
+        } catch (IOException i) {
+            view.showErrorMessage("Failed to save game: " + i.getMessage());
+            i.printStackTrace();
+        }
     }
 
     /**
-     * Loads a game from a file.
-     * <b>Pre-condition:</b> A valid save file exists at filePath.
-     * <b>Post-condition:</b> The Controller's state (players, board) is replaced with the data from the file.
-     * * @param filePath The location of the save file.
+     * Loads a game state from a file and restores the application state.
+     * @param filePath The location of the save file.
      */
     public void loadGame(String filePath) {
-        //TODO: Use ObjectInputStream to read data
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
+
+            // Read the objects in the EXACT SAME ORDER they were written
+            this.players = (ArrayList<Player>) in.readObject();
+            this.currentPlayerIndex = in.readInt();
+            this.bag = (Bag) in.readObject();
+            this.board = (Board) in.readObject();
+            this.gameFinished = in.readBoolean();
+            this.thief = (Player) in.readObject();
+            this.isSinglePlayer = in.readBoolean();
+
+            // After loading the raw data, we must tell the View to repaint itself
+            // based on the new Board and Player objects we just loaded.
+            view.showMessage("Game loaded successfully!");
+            view.updateView();
+
+        } catch (IOException i) {
+            view.showErrorMessage("Could not load file: " + i.getMessage());
+            i.printStackTrace();
+        } catch (ClassNotFoundException c) {
+            view.showErrorMessage("Game file is corrupted or incompatible.");
+            c.printStackTrace();
+        }
     }
 
     /**

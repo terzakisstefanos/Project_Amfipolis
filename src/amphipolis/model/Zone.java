@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * <b>Invariant:</b> The internal list of tiles is never null.
  * <b>Invariant:</b> The zone stores generic Tile objects, allowing for polymorphism (holding Mosaics, Amphoras, etc.).
  */
-public class Zone {
+public class Zone implements java.io.Serializable{
 
     /**
      * The list of tiles currently in this zone.
