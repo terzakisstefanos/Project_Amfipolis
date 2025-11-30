@@ -32,6 +32,7 @@ public class Player {
         this.lastVisitedZone = null;
         this.coderReservedZone = null;
     }
+
     /**
      * Gets the zone the player visited during the standard action of the current turn.
      * This is used to enforce restrictions for characters like the Archaeologist.
@@ -89,7 +90,7 @@ public class Player {
                 if (m.getColor() == Color.GREEN) greent++;
                 else if (m.getColor() == Color.RED) redt++;
                 else if (m.getColor() == Color.YELLOW) yellowt++;
-            }else if (t.getClass() == SkeletonTile.class) {
+            } else if (t.getClass() == SkeletonTile.class) {
                 SkeletonTile s = (SkeletonTile) t;
                 if (s.getType() == SkeletonType.BIG) {
                     if (s.getPart() == SkeletonPart.UPPER) bigtops++;
@@ -98,8 +99,7 @@ public class Player {
                     if (s.getPart() == SkeletonPart.UPPER) smalltops++;
                     else smallbot++;
                 }
-            }
-            else if (t.getClass() == AmphoraTile.class) {
+            } else if (t.getClass() == AmphoraTile.class) {
                 AmphoraTile a = (AmphoraTile) t;
                 amphoraCounts[a.getColor().ordinal()]++; // Use ordinal() to map enum color to an index (0-5)
             }
@@ -174,13 +174,18 @@ public class Player {
     }
 
     public Character[] getCharacters() {
-        return  myCharacters;
+        return myCharacters;
     }
-    public int GetScore(){
+
+    public int GetScore() {
         return score;
     }
 
     public String getName() {
         return name;
+    }
+
+    public ArrayList<Tile> getCollectedTiles() {
+        return collectedTiles;
     }
 }

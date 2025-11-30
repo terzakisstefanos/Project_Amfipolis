@@ -3,8 +3,9 @@ package amphipolis.controller;
 import amphipolis.model.*;
 import amphipolis.model.Character;
 import amphipolis.view.GameView;
+
+import java.util.*;
 import java.io.*;
-import java.util.ArrayList;
 
 /**
  * The Controller class acts as the central coordinator (Brain) of the MVC architecture.
@@ -93,6 +94,7 @@ public class Controller {
                     board.getStatueZone().addTile(tile);
                 } else if (tile.getClass() == LandslideTile.class) {
                     handleLandslide((LandslideTile) tile);
+                    return;
                 }
             }
         }
@@ -105,8 +107,11 @@ public class Controller {
         }
         // Check again if not empty before asking for second tile
         if (!zone.isEmpty()) {
-            Tile drawnTile = zone.removeTile();
-            players.get(currentPlayerIndex).addTile(drawnTile);
+            view.updateView();
+            if (howmany() == 2) {
+                Tile drawnTile2 = zone.removeTile();
+                current.addTile(drawnTile2);
+            }
         }
 
         view.updateView(); // update the view
@@ -142,7 +147,9 @@ public class Controller {
         if (currentPlayerIndex >= players.size()) {
             currentPlayerIndex = 0;
         }
-        startTurn();
+        if (!gameFinished) {
+            startTurn();
+        }
     }
 
     /**
@@ -151,8 +158,24 @@ public class Controller {
      */
     private void handleLandslide(LandslideTile t) {
         board.getEntranceZone().addTile(t);
+        if (isSinglePlayer) {
+            view.showMessage("Landslide! The Thief steals all tiles from the board!");
+            stealAllTiles(board.getMosaicZone());
+            stealAllTiles(board.getAmphoraZone());
+            stealAllTiles(board.getSkeletonZone());
+            stealAllTiles(board.getStatueZone());
+            view.updateView();
+        }
         checkGameOver(board.getEntranceZone());
-        endTurn();
+        if (!gameFinished) {
+            endTurn();
+        }
+    }
+
+    private void stealAllTiles(Zone zone) {
+        while (!zone.isEmpty()) {
+            thief.addTile(zone.removeTile());
+        }
     }
 
     /**
@@ -162,8 +185,9 @@ public class Controller {
      */
     /**
      * Checks if the game should end based on the Entrance Zone status.
+     *
      * @param zone The entrance zone to check.
-     * <b>Post-condition:</b> If zone.isFull() is true, gameFinished becomes true and the GUI displays the results.
+     *             <b>Post-condition:</b> If zone.isFull() is true, gameFinished becomes true and the GUI displays the results.
      */
     private void checkGameOver(EntranceZone zone) {
         if (zone.isFull()) {
@@ -177,10 +201,10 @@ public class Controller {
 
             int maxScore = -1;
             ArrayList<Player> winners = new ArrayList<>();
-
-            // 2. Calculate scores for everyone (including Thief if present)
+            Map<Player, Integer> statuePoints = calculateStatuePoints(  );
             for (Player p : players) {
-                int score = p.computePoints(); // Calculate final score
+                int score = p.computePoints();
+                score = +statuePoints.getOrDefault(p, 0); // Get statue points
                 scoreboard.append(p.getName()).append(": ").append(score).append("\n");
 
                 // Determine winner(s)
@@ -210,19 +234,58 @@ public class Controller {
             view.showMessage(scoreboard.toString());
         }
     }
+    private Map<Player, Integer> calculateStatuePoints() {
+        Map<Player, Integer> points = new HashMap<>();
+        for (Player p : players) points.put(p, 0);
+
+        points = assignMajorityPoints(points, true);  // Pass 1: Sphinxes
+        points = assignMajorityPoints(points, false); // Pass 2: Caryatids
+
+        return points;
+    }
+    private Map<Player, Integer> assignMajorityPoints(Map<Player, Integer> currentPoints, boolean isSphinx) {
+        int maxCount = -1;
+        int minCount = 1000;
+        Map<Player, Integer> counts = new HashMap<>();
+        for (Player p : players) {
+            int count = 0;
+            for (Tile t : p.getCollectedTiles()) {
+                if (t instanceof StatueTile && ((StatueTile) t).isSphinx() == isSphinx) {
+                    count++;
+                }
+            }
+            counts.put(p, count);
+            if (count > maxCount) maxCount = count;
+            if (count < minCount) minCount = count;
+        }
+        for (Player p : players) {
+            int count = counts.get(p);
+            int bonus = 0;
+            if (count == maxCount && count > 0) {
+                bonus = 6;
+            } else if (count == minCount) {
+                bonus = 0;
+            } else {
+                bonus = 3;
+            }
+
+            currentPoints.put(p, currentPoints.get(p) + bonus);
+        }
+        return currentPoints;
+    }
 
     /**
      * Saves the current game state to a file using Java Serialization.
+     *
      * @param filePath The location to save the file (e.g., "saved_game.ser").
      */
     public void saveGame(String filePath) {
-        // Ensure the file has a proper extension
-        if (!filePath.endsWith(".ser")) {
+        if (!filePath.endsWith(".ser")) {// make the extension
             filePath += ".ser";
         }
 
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            // Write all necessary state objects in a specific order
+            // we need to load them with the same order
             out.writeObject(players);
             out.writeInt(currentPlayerIndex);
             out.writeObject(bag);
@@ -230,12 +293,7 @@ public class Controller {
             out.writeBoolean(gameFinished);
             out.writeObject(thief);
             out.writeBoolean(isSinglePlayer);
-
-            // Note: We DO NOT save the 'view' because GUI components are not serializable.
-            // We only save the data (Model).
-
             view.showMessage("Game saved successfully to " + filePath);
-
         } catch (IOException i) {
             view.showErrorMessage("Failed to save game: " + i.getMessage());
             i.printStackTrace();
@@ -244,12 +302,11 @@ public class Controller {
 
     /**
      * Loads a game state from a file and restores the application state.
+     *
      * @param filePath The location of the save file.
      */
     public void loadGame(String filePath) {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
-
-            // Read the objects in the EXACT SAME ORDER they were written
             this.players = (ArrayList<Player>) in.readObject();
             this.currentPlayerIndex = in.readInt();
             this.bag = (Bag) in.readObject();
@@ -257,12 +314,8 @@ public class Controller {
             this.gameFinished = in.readBoolean();
             this.thief = (Player) in.readObject();
             this.isSinglePlayer = in.readBoolean();
-
-            // After loading the raw data, we must tell the View to repaint itself
-            // based on the new Board and Player objects we just loaded.
             view.showMessage("Game loaded successfully!");
             view.updateView();
-
         } catch (IOException i) {
             view.showErrorMessage("Could not load file: " + i.getMessage());
             i.printStackTrace();
