@@ -41,10 +41,10 @@ public class Controller {
      * <b>Post-condition:</b> Initializes Players, Board, Bag, and starts the first turn.
      */
     public void startGame() {
-        view.setMuteButtonListener(e -> toggleMute());
         this.view = new GameView(this);
+        view.setMuteButtonListener(e -> toggleMute());
         boolean wantToLoad = view.promptLoadGame();
-        if (!wantToLoad) {// because the prompt return 0 if yes
+        if (wantToLoad) {
             int loadType = view.promptLoadType(); // 0 = Last Saved, 1 = Custom File
 
             String path = null;
@@ -67,7 +67,10 @@ public class Controller {
         this.board.init();
         this.gameFinished = false;
         this.players = new ArrayList<>();
-        int numPlayers = view.promptPlayerCount();
+        int numPlayers=0;
+        while (numPlayers==-1){
+            numPlayers = view.promptPlayerCount();
+        }
         this.isSinglePlayer = (numPlayers == 1);
         for (int i = 1; i <= numPlayers; i++) {
             players.add(new Player("Player " + i));
@@ -79,7 +82,9 @@ public class Controller {
         this.currentPlayerIndex = 0;
         view.updateView();
         playMusicForPlayer(0);
-        startTurn();
+        view.setDrawButtonListener(e -> {
+            startTurn();
+        });
     }
 
     /**

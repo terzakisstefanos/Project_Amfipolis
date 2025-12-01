@@ -338,4 +338,18 @@ public class GameView extends JFrame {
     public void setMuteButtonListener(java.awt.event.ActionListener listener) {
         this.muteButton.addActionListener(listener);
     }
+
+    /**
+     * Connects the Draw button to the Controller.
+     */
+    public void setDrawButtonListener(java.awt.event.ActionListener listener) {
+        this.drawButton.addActionListener(listener);
+    }
+
+    /**
+     * Connects the End Turn button to the Controller.
+     */
+    public void setEndTurnButtonListener(java.awt.event.ActionListener listener) {
+        this.endTurnButton.addActionListener(listener);
+    }
 }
