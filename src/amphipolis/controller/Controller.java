@@ -4,8 +4,10 @@ import amphipolis.model.*;
 import amphipolis.model.Character;
 import amphipolis.view.GameView;
 
+import javax.swing.Timer;
 import java.util.*;
 import java.io.*;
+import javax.sound.sampled.*;
 
 /**
  * The Controller class acts as the central coordinator (Brain) of the MVC architecture.
@@ -25,6 +27,12 @@ public class Controller {
     private GameView view;
     private Player thief;
     private boolean isSinglePlayer;
+    private Timer gameTimer;
+    private int timeLeft;
+    private final int TURN_DURATION = 30;
+    private Clip musicClip;
+    private boolean isMuted = false;
+    private long clipTimePosition = 0;
 
 
     /**
@@ -33,10 +41,10 @@ public class Controller {
      * <b>Post-condition:</b> Initializes Players, Board, Bag, and starts the first turn.
      */
     public void startGame() {
-        //todo when we create the players we need to ask for their name maybe
+        view.setMuteButtonListener(e -> toggleMute());
         this.view = new GameView(this);
         boolean wantToLoad = view.promptLoadGame();
-        if (wantToLoad) {
+        if (!wantToLoad) {// because the prompt return 0 if yes
             int loadType = view.promptLoadType(); // 0 = Last Saved, 1 = Custom File
 
             String path = null;
@@ -70,6 +78,7 @@ public class Controller {
         }
         this.currentPlayerIndex = 0;
         view.updateView();
+        playMusicForPlayer(0);
         startTurn();
     }
 
@@ -98,6 +107,8 @@ public class Controller {
                 }
             }
         }
+        startTimer();
+        playMusicForPlayer(currentPlayerIndex);
         Zone zone = selectZone(null, true);
         current.setLastVisitedZone(zone);
         assert zone != null;
@@ -172,17 +183,19 @@ public class Controller {
         }
     }
 
+    /**
+     * Moves all tiles from a specific zone to the Thief's collection.
+     * This is used in Single Player mode when a Landslide occurs.
+     * <b>Post-condition:</b> The specified zone becomes empty.
+     *
+     * @param zone The zone from which to steal tiles.
+     */
     private void stealAllTiles(Zone zone) {
         while (!zone.isEmpty()) {
             thief.addTile(zone.removeTile());
         }
     }
 
-    /**
-     * Checks if the game should end based on the Entrance Zone status.
-     * * @param zone The entrance zone to check.
-     * <b>Post-condition:</b> If zone.isFull() is true, gameFinished becomes true and winners are calculated.
-     */
     /**
      * Checks if the game should end based on the Entrance Zone status.
      *
@@ -201,7 +214,7 @@ public class Controller {
 
             int maxScore = -1;
             ArrayList<Player> winners = new ArrayList<>();
-            Map<Player, Integer> statuePoints = calculateStatuePoints(  );
+            Map<Player, Integer> statuePoints = calculateStatuePoints();
             for (Player p : players) {
                 int score = p.computePoints();
                 score = +statuePoints.getOrDefault(p, 0); // Get statue points
@@ -234,6 +247,15 @@ public class Controller {
             view.showMessage(scoreboard.toString());
         }
     }
+
+    /**
+     * Calculates the points awarded for Statue tiles (Sphinxes and Caryatids).
+     * Points are awarded based on who has the majority of each statue type.
+     * <b>Pre-condition:</b> The game must be in the scoring phase.
+     * <b>Post-condition:</b> Returns a map associating each player with their statue bonus points.
+     *
+     * @return A Map where Key = Player and Value = Points from statues.
+     */
     private Map<Player, Integer> calculateStatuePoints() {
         Map<Player, Integer> points = new HashMap<>();
         for (Player p : players) points.put(p, 0);
@@ -243,6 +265,15 @@ public class Controller {
 
         return points;
     }
+
+    /**
+     * Helper method to determine the majority owner for a specific type of statue.
+     * Rules: 6 points for most, 3 for others, 0 for least.
+     *
+     * @param currentPoints The map of points accumulated so far.
+     * @param isSphinx      True to calculate for Sphinxes, False for Caryatids.
+     * @return The updated map of points.
+     */
     private Map<Player, Integer> assignMajorityPoints(Map<Player, Integer> currentPoints, boolean isSphinx) {
         int maxCount = -1;
         int minCount = 1000;
@@ -374,7 +405,109 @@ public class Controller {
         return view.promptTileCount();
     }
 
+    /**
+     * Accessor for the game board.
+     *
+     * @return The Board object associated with this controller.
+     */
     public Board getBoard() {
         return board;
+    }
+
+    /**
+     * Plays the background music associated with the current player using Java Sound SPI (jFLAC).
+     *
+     * @param playerIndex The index of the player (0-3).
+     */
+    private void playMusicForPlayer(int playerIndex) {
+        if (isMuted) return;
+
+        // Stop old music
+        if (musicClip != null && musicClip.isRunning()) {
+            musicClip.stop();
+            musicClip.close();
+        }
+
+        try {
+            // 1. Get the file (e.g., "music/Player1.flac")
+            String filePath = "music/Player" + (playerIndex + 1) + ".flac";
+            File musicFile = new File(filePath);
+
+            if (musicFile.exists()) {
+                // 2. Get the raw (compressed) audio stream
+                AudioInputStream rawStream = AudioSystem.getAudioInputStream(musicFile);
+                AudioFormat baseFormat = rawStream.getFormat();
+
+                // 3. Create a "Decoded" format (PCM Signed) that Java can actually play
+                AudioFormat decodedFormat = new AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED,
+                        baseFormat.getSampleRate(),
+                        16, // 16-bit is standard for playback
+                        baseFormat.getChannels(),
+                        baseFormat.getChannels() * 2, // Frame Size
+                        baseFormat.getSampleRate(),
+                        false // Big Endian
+                );
+
+                // 4. Convert the FLAC stream to the Decoded PCM stream
+                AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, rawStream);
+
+                // 5. Play the decoded stream
+                musicClip = AudioSystem.getClip();
+                musicClip.open(decodedStream);
+                musicClip.loop(Clip.LOOP_CONTINUOUSLY);
+                musicClip.start();
+            } else {
+                System.err.println("Music file not found: " + filePath);
+            }
+        } catch (Exception e) {
+            System.err.println("Error playing audio: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Toggles the sound on/off.
+     */
+    public void toggleMute() {
+        isMuted = !isMuted;
+        view.updateMuteButton(isMuted);
+
+        if (isMuted) {
+            if (musicClip != null && musicClip.isRunning()) {
+                musicClip.stop();
+            }
+        } else {
+            // Resume playing current player's music
+            playMusicForPlayer(currentPlayerIndex);
+        }
+    }
+
+    /**
+     * Initializes and starts the turn timer.
+     * If the timer reaches 0, it automatically ends the turn.
+     */
+    private void startTimer() {
+        // Stop existing timer if running
+        if (gameTimer != null) {
+            gameTimer.stop();
+        }
+
+        timeLeft = TURN_DURATION;
+        view.updateTimer(timeLeft);
+
+        // Create a new timer that ticks every 1000ms (1 second)
+        gameTimer = new Timer(1000, e -> {
+            timeLeft--;
+            view.updateTimer(timeLeft);
+
+            if (timeLeft <= 0) {
+                gameTimer.stop();
+                view.showMessage("Time's up! Turn ended.");
+                endTurn(); // Force end of turn
+            }
+        });
+
+        gameTimer.start();
     }
 }

@@ -172,19 +172,36 @@ public class Player {
     public void addTile(Tile t) {
         collectedTiles.add(t);
     }
-
+    /**
+     * Accessor for the player's character cards.
+     *
+     * @return An array of the 5 Character objects owned by the player.
+     */
     public Character[] getCharacters() {
         return myCharacters;
     }
-
+    /**
+     * Accessor for the player's current score.
+     * Note: This returns the score calculated by the last call to computePoints().
+     *
+     * @return The integer score.
+     */
     public int GetScore() {
         return score;
     }
-
+    /**
+     * Accessor for the player's name.
+     *
+     * @return The name string (e.g., "Player 1").
+     */
     public String getName() {
         return name;
     }
-
+    /**
+     * Accessor for the list of tiles collected by the player.
+     *
+     * @return The ArrayList containing all tiles in the player's possession.
+     */
     public ArrayList<Tile> getCollectedTiles() {
         return collectedTiles;
     }
