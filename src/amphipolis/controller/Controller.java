@@ -67,7 +67,7 @@ public class Controller {
         this.board.init();
         this.gameFinished = false;
         this.players = new ArrayList<>();
-        int numPlayers=0;
+        int numPlayers=-1;
         while (numPlayers==-1){
             numPlayers = view.promptPlayerCount();
         }

@@ -231,7 +231,7 @@ public class GameView extends JFrame {
                 JOptionPane.QUESTION_MESSAGE,     // Icon type
                 null,     // icon if I want one
                 options,
-                options[0]// The default button
+                options[3]// The default button
         );
     }
 
