@@ -8,142 +8,212 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-/**
- * The main graphical user interface (GUI) for the Amphipolis game.
- * Responsible for rendering the game state (Board, Player Hand, Timer) to the screen.
- * <b>Invariant:</b> The View always holds a reference to a valid, initialized Controller.
- * <b>Invariant:</b> The main window (JFrame) is visible while the game is running.
- */
 public class GameView extends JFrame {
 
     private Controller controller;
-    private JLayeredPane boardPane; // Required by project description
+    private JLayeredPane boardPane;
     private JButton drawButton;
-    public JButton endTurnButton;
-    private JLabel timerLabel;
-    private JLabel infoLabel;
+    private JButton endTurnButton;
     private JButton muteButton;
+    private JLabel timerLabel;
 
-    /**
-     * Constructor that generates the UI.
-     * <b>Pre-condition:</b> The Controller must be started and initialized.
-     * <b>Post-condition:</b> The game window is created, components are added, and the UI is displayed to the user.
-     *
-     * @param controller The game controller to link with this view.
-     */
+
+    // Hand window components
+    private JFrame handWindow;
+    private JPanel handPanel;
+    private JLabel handTitleLabel;
+
     public GameView(Controller controller) {
 
-        this.controller = controller;
+            this.controller = controller;
 
-        this.setTitle("Amphipolis Game");
-        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        this.setSize(1000, 800);
-        this.setLayout(new BorderLayout());
+            this.setTitle("Amphipolis Game");
+            this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            this.setLayout(new BorderLayout());
 
-        this.boardPane = new JLayeredPane();
-        this.drawButton = new JButton("Draw Tiles");
-        this.endTurnButton = new JButton("End Turn");
-        this.muteButton = new JButton("Mute");
-        this.timerLabel = new JLabel("Time: 30");// todo add timer implementation + music
+            // Center: board
+            this.boardPane = new JLayeredPane();
+            this.add(boardPane, BorderLayout.CENTER);
 
-        this.add(boardPane, BorderLayout.CENTER);
+            // Right: player bag / hand
+            initHandPanel();
+            this.add(createHandContainer(), BorderLayout.EAST);
 
-        JPanel controlPanel = new JPanel();
-        controlPanel.add(timerLabel);
-        controlPanel.add(drawButton);
-        controlPanel.add(endTurnButton);
-        controlPanel.add(muteButton);
-        this.add(controlPanel, BorderLayout.SOUTH);
-        this.setVisible(true);
+            // Bottom: controls
+            this.drawButton = new JButton("Draw Tiles");
+            this.endTurnButton = new JButton("End Turn");
+            this.muteButton = new JButton("Mute");
+            this.timerLabel = new JLabel("Time: 30");
+
+            JPanel controlPanel = new JPanel();
+            controlPanel.add(timerLabel);
+            controlPanel.add(drawButton);
+            controlPanel.add(endTurnButton);
+            controlPanel.add(muteButton);
+            this.add(controlPanel, BorderLayout.SOUTH);
+
+            this.setSize(1000, 800);
+            this.setLocationRelativeTo(null);
+            this.setVisible(true);
+        // If you want the hand window to track the main window position:
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentMoved(java.awt.event.ComponentEvent e) {
+                if (handWindow != null) {
+                    Point mainLoc = getLocation();
+                    handWindow.setLocation(mainLoc.x + getWidth(), mainLoc.y);
+                }
+            }
+        });
+    }
+
+    private void initHandWindow() {
+        handWindow = new JFrame("Player Hand");
+        handWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        handTitleLabel = new JLabel("Current Player:");
+        handTitleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        handPanel = new JPanel(new FlowLayout());
+        handPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        handWindow.setLayout(new BorderLayout());
+        handWindow.add(handTitleLabel, BorderLayout.NORTH);
+        handWindow.add(new JScrollPane(handPanel), BorderLayout.CENTER);
+
+        handWindow.setSize(500, 300);
+
+        // Place to the right of the main window
+        Point mainLoc = getLocation();
+        handWindow.setLocation(mainLoc.x + getWidth(), mainLoc.y);
+        handWindow.setVisible(true);
     }
 
     /**
-     * Updates the graphical interface to reflect the current state of the Model.
-     * <b>Pre-condition:</b> A view window is already active and visible.
-     * <b>Post-condition:</b> All graphical components (Board tiles, Labels) are refreshed.
+     * Updates the graphical interface (board + hand window).
      */
     public void updateView() {
-        // 1. Clear everything from the board pane so we don't draw over old tiles
         boardPane.removeAll();
 
+        int panelW = boardPane.getWidth();
+        int panelH = boardPane.getHeight();
+        if (panelW <= 0) panelW = getWidth();
+        if (panelH <= 0) panelH = getHeight();
 
-        // 2. Add the Background Image (Layer 0 - Bottom)
-        // Adjust the path if your image is in a different folder structure
         ImageIcon bgIcon = new ImageIcon("images/background.png");
+        Image bgOriginal = bgIcon.getImage();
+        int imgW = bgOriginal.getWidth(null);
+        int imgH = bgOriginal.getHeight(null);
 
-        // Optional: Scale background to fit window if needed
-        Image bgImage = bgIcon.getImage().getScaledInstance(1000, 800, Image.SCALE_SMOOTH);
-        JLabel bgLabel = new JLabel(new ImageIcon(bgImage));
+        if (imgW > 0 && imgH > 0) {
+            double scaleX = (double) panelW / imgW;
+            double scaleY = (double) panelH / imgH;
+            double scale = Math.min(scaleX, scaleY);
 
-        bgLabel.setBounds(0, 0, 1000, 800);
-        boardPane.add(bgLabel, Integer.valueOf(0)); // Layer 0
+            int drawW = (int) (imgW * scale);
+            int drawH = (int) (imgH * scale);
 
-        // 3. Get the Board from the Controller
-        amphipolis.model.Board board = controller.getBoard();
+            int offsetX = (panelW - drawW) / 2;
+            int offsetY = (panelH - drawH) / 2;
 
-        // 4. Draw Tiles for each Zone (Layer 1 - Top)
-        // You MUST adjust these x, y coordinates to match your background image slots!
+            Image bgScaled = bgOriginal.getScaledInstance(drawW, drawH, Image.SCALE_SMOOTH);
+            JLabel bgLabel = new JLabel(new ImageIcon(bgScaled));
+            bgLabel.setBounds(offsetX, offsetY, drawW, drawH);
+            boardPane.add(bgLabel, Integer.valueOf(0)); // background layer
 
-        // Mosaic Zone (Top Left)
-        drawZone(board.getMosaicZone(), 50, 50);
+            amphipolis.model.Board board = controller.getBoard();
+            if (board != null) {
+                // Relative positions on the board image (tune to fit your artwork)
+                double mosaicRelX   = 0.08;
+                double mosaicRelY   = 0.10;
+                double statueRelX   = 0.70;
+                double statueRelY   = 0.10;
+                double amphoraRelX  = 0.08;
+                double amphoraRelY  = 0.65;
+                double skeletonRelX = 0.70;
+                double skeletonRelY = 0.65;
+                double entranceRelX = 0.42;
+                double entranceRelY = 0.40;
 
-        // Statue Zone (Top Right)
-        drawZone(board.getStatueZone(), 700, 50);
+                int mosaicX   = offsetX + (int) (mosaicRelX   * drawW);
+                int mosaicY   = offsetY + (int) (mosaicRelY   * drawH);
+                int statueX   = offsetX + (int) (statueRelX   * drawW);
+                int statueY   = offsetY + (int) (statueRelY   * drawH);
+                int amphoraX  = offsetX + (int) (amphoraRelX  * drawW);
+                int amphoraY  = offsetY + (int) (amphoraRelY  * drawH);
+                int skeletonX = offsetX + (int) (skeletonRelX * drawW);
+                int skeletonY = offsetY + (int) (skeletonRelY * drawH);
+                int entranceX = offsetX + (int) (entranceRelX * drawW);
+                int entranceY = offsetY + (int) (entranceRelY * drawH);
 
-        // Amphora Zone (Bottom Left)
-        drawZone(board.getAmphoraZone(), 50, 500);
+                drawZone(board.getMosaicZone(),   mosaicX,   mosaicY);
+                drawZone(board.getStatueZone(),   statueX,   statueY);
+                drawZone(board.getAmphoraZone(),  amphoraX,  amphoraY);
+                drawZone(board.getSkeletonZone(), skeletonX, skeletonY);
+                drawZone(board.getEntranceZone(), entranceX, entranceY);
+            }
+        }
 
-        // Skeleton Zone (Bottom Right)
-        drawZone(board.getSkeletonZone(), 700, 500);
-
-        // Entrance Zone (Center - for Landslides)
-        drawZone(board.getEntranceZone(), 380, 300);
-
-        // 5. Refresh the UI to show changes
-        boardPane.repaint();
         boardPane.revalidate();
+        boardPane.repaint();
+
+        // Update the right-side bag
+        updateHandPanel();
     }
 
-    /**
-     * Helper method to draw all tiles in a specific zone at a given start position.
-     * * @param zone The zone containing the tiles to draw.
-     * @param startX The x-coordinate where the first tile should be placed.
-     * @param startY The y-coordinate where the first tile should be placed.
-     */
     private void drawZone(amphipolis.model.Zone zone, int startX, int startY) {
         if (zone == null) return;
 
         java.util.ArrayList<amphipolis.model.Tile> tiles = zone.getTiles();
         int x = startX;
         int y = startY;
-        int tileWidth = 50;  // Adjust based on your actual tile image size
-        int tileHeight = 50; // Adjust based on your actual tile image size
-        int spacing = 10;    // Space between tiles
+        int tileWidth = 50;
+        int tileHeight = 50;
+        int spacing = 10;
 
         for (amphipolis.model.Tile t : tiles) {
-            // Load the image for this specific tile
             ImageIcon tileIcon = new ImageIcon(t.getImagePath());
-
-            // Scale tile image if it's too big (optional but recommended)
             Image scaledImage = tileIcon.getImage().getScaledInstance(tileWidth, tileHeight, Image.SCALE_SMOOTH);
             JLabel tileLabel = new JLabel(new ImageIcon(scaledImage));
-
-            // Set position
             tileLabel.setBounds(x, y, tileWidth, tileHeight);
-
-            // Add to the BoardPane at Layer 1 (above background)
             boardPane.add(tileLabel, Integer.valueOf(1));
 
-            // Move coordinates for the next tile
-            // For a grid-like layout, you could add logic here:
             x += tileWidth + spacing;
-
-            // Example wrap-around logic (if x gets too wide, move down a row)
-            // if (x > startX + 200) {
-            //     x = startX;
-            //     y += tileHeight + spacing;
-            // }
         }
+    }
+
+    private void updateHandPanel() {
+        if (handPanel == null || controller == null) return;
+
+        amphipolis.model.Player current = controller.getCurrentPlayer();
+        if (current == null) return;
+
+        // Title
+        handTitleLabel.setText("Current Player: " + current.getName());
+
+        // Remove old tile labels (keep the title at index 0 and a spacer)
+        // Easiest: clear all and re-add title + spacer + tiles
+        handPanel.removeAll();
+        handPanel.add(handTitleLabel);
+        handPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        java.util.ArrayList<amphipolis.model.Tile> tiles = current.getCollectedTiles();
+        if (tiles == null) tiles = new java.util.ArrayList<>();
+
+        int tileWidth = 40;
+        int tileHeight = 40;
+
+        for (amphipolis.model.Tile t : tiles) {
+            ImageIcon icon = new ImageIcon(t.getImagePath());
+            Image img = icon.getImage().getScaledInstance(tileWidth, tileHeight, Image.SCALE_SMOOTH);
+            JLabel lbl = new JLabel(new ImageIcon(img));
+            lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+            handPanel.add(lbl);
+            handPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        }
+
+        handPanel.revalidate();
+        handPanel.repaint();
     }
 
     /**
@@ -294,22 +364,58 @@ public class GameView extends JFrame {
      * @return The index of the selected character in the player's hand, or -1 if cancelled.
      */
     public int promptCharacterSelection() {
-        // These are the 5 standard characters in the game
-        Object[] options = {"Assistant", "Archaeologist", "Digger", "Professor", "Coder"};
+        // Paths to your character images (adjust as needed)
+        String[] imagePaths = {
+                "images/assistant.png",
+                "images/archaeologist.png",
+                "images/digger.png",
+                "images/professor.png",
+                "images/coder.png"
+        };
 
-        return JOptionPane.showOptionDialog(
-                this,
-                "Select a Character to use:",       // Message
-                "Character Selection",              // Title
-                JOptionPane.DEFAULT_OPTION,         // Option Type
-                JOptionPane.PLAIN_MESSAGE,          // Message Type (No icon needed usually)
-                null,                               // Icon (null)
-                options,                            // The Array of options
-                options[0]                          // Default selection
-        );
+        final int[] selectedIndex = {-1};
+
+        JDialog dialog = new JDialog(this, "Select a Character", true);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        JPanel panel = new JPanel(new FlowLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        int buttonSize = 120; // size for scaled images/buttons
+
+        for (int i = 0; i < imagePaths.length; i++) {
+            final int index = i;
+
+            ImageIcon icon = new ImageIcon(imagePaths[i]);
+            // Optional: scale image to a fixed size
+            Image img = icon.getImage().getScaledInstance(buttonSize, buttonSize, Image.SCALE_SMOOTH);
+            icon = new ImageIcon(img);
+
+            JButton button = new JButton(icon);
+            button.setPreferredSize(new Dimension(buttonSize, buttonSize));
+            button.setBorder(BorderFactory.createEmptyBorder());
+            button.setContentAreaFilled(false); // optional: transparent background
+
+            button.addActionListener(e -> {
+                selectedIndex[0] = index;
+                dialog.dispose();
+            });
+
+            panel.add(button);
+        }
+
+        dialog.getContentPane().add(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        // When dialog is closed without clicking, selectedIndex[0] stays -1
+        return selectedIndex[0];
     }
+
     /**
      * Updates the timer label text.
+     *
      * @param seconds The integer seconds remaining (e.g., 29).
      */
     public void updateTimer(int seconds) {
@@ -321,8 +427,10 @@ public class GameView extends JFrame {
             this.timerLabel.setForeground(Color.BLACK);
         }
     }
+
     /**
      * Updates the text or icon of the mute button.
+     *
      * @param isMuted The new state of the sound.
      */
     public void updateMuteButton(boolean isMuted) {
@@ -332,8 +440,10 @@ public class GameView extends JFrame {
             this.muteButton.setText("Mute");
         }
     }
+
     /**
      * Connects the mute button to the Controller.
+     *
      * @param listener The action to perform when clicked.
      */
     public void setMuteButtonListener(java.awt.event.ActionListener listener) {
@@ -353,4 +463,85 @@ public class GameView extends JFrame {
     public void setEndTurnButtonListener(java.awt.event.ActionListener listener) {
         this.endTurnButton.addActionListener(listener);
     }
+
+    public void shakeWindow() {
+        final int shakeDistance = 10;   // pixels
+        final int shakeDuration = 400;  // total duration in ms
+        final int shakeDelay = 40;      // delay between moves in ms
+
+        Point originalLocation = this.getLocation();
+        long start = System.currentTimeMillis();
+
+        Timer shakeTimer = new Timer(shakeDelay, null);
+        shakeTimer.addActionListener(e -> {
+            long elapsed = System.currentTimeMillis() - start;
+            if (elapsed > shakeDuration) {
+                // End: restore original location and stop timer
+                this.setLocation(originalLocation);
+                shakeTimer.stop();
+            } else {
+                int offsetX = (int) ((Math.random() - 0.5) * 2 * shakeDistance);
+                int offsetY = (int) ((Math.random() - 0.5) * 2 * shakeDistance);
+                this.setLocation(originalLocation.x + offsetX, originalLocation.y + offsetY);
+            }
+        });
+        shakeTimer.start();
+    }
+
+    public void showLandslideDialog() {
+        // Adjust path to your landslide image
+        ImageIcon icon = new ImageIcon("images/landslide.png");
+
+        // Optionally scale
+        Image img = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        icon = new ImageIcon(img);
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Landslide!",             // you can also pass null if you only want the image
+                "Landslide!",
+                JOptionPane.INFORMATION_MESSAGE,
+                icon
+        );
+    }
+    public void setButtonsEnabled(boolean enabled) {
+        drawButton.setEnabled(enabled);
+        endTurnButton.setEnabled(enabled);
+        muteButton.setEnabled(enabled);
+    }
+
+    /**
+     * Closes the window / exits the program after the given delay (milliseconds).
+     */
+    public void scheduleExitAfterDelay(int delayMillis) {
+        new javax.swing.Timer(delayMillis, e -> {
+            System.exit(0);
+        }) {{
+            setRepeats(false);
+            start();
+        }};
+    }
+    private void initHandPanel() {
+        handPanel = new JPanel();
+        handPanel.setLayout(new BoxLayout(handPanel, BoxLayout.Y_AXIS));
+        handPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        handTitleLabel = new JLabel("Current Player:");
+        handTitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        handPanel.add(handTitleLabel);
+        handPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    }
+
+    private JPanel createHandContainer() {
+        JPanel container = new JPanel(new BorderLayout());
+        container.setPreferredSize(new Dimension(250, 0)); // width of right bar
+
+        JScrollPane scroll = new JScrollPane(handPanel);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        container.add(scroll, BorderLayout.CENTER);
+
+        return container;
+    }
 }
+

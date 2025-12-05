@@ -28,9 +28,15 @@ public class Player {
         this.name = name;
         this.score = 0;
         this.collectedTiles = new ArrayList<>();
-        this.myCharacters = new Character[5];
         this.lastVisitedZone = null;
         this.coderReservedZone = null;
+        this.myCharacters = new Character[] {
+                new Assistant(),
+                new Archaeologist(),
+                new Digger(),
+                new Professor(),
+                new Coder()
+        };
     }
 
     /**

@@ -97,6 +97,9 @@ public class Controller {
      * <b>Post-condition:</b> The current player draws 4 tiles. If a Landslide occurs, handleLandslide is called.
      */
     public void startTurn() {
+        if (gameFinished) {
+            return;
+        }
         Player current = players.get(currentPlayerIndex);
         for (int i = 0; i < 4; i++) {
             Tile tile = bag.drawRandomTile();
@@ -111,7 +114,6 @@ public class Controller {
                 } else if (tile.getClass() == StatueTile.class) {
                     board.getStatueZone().addTile(tile);
                 } else if (tile.getClass() == LandslideTile.class) {
-                    view.showMessage("landslide");
                     handleLandslide((LandslideTile) tile);
                     return;
                 }
@@ -170,6 +172,9 @@ public class Controller {
      * <b>Post-condition:</b> Control passes to the next player index. startTurn() is called for them.
      */
     public void endTurn() {
+        if (gameFinished) {
+            return;
+        }
         currentPlayerIndex++;
         if (currentPlayerIndex >= players.size()) {
             currentPlayerIndex = 0;
@@ -185,8 +190,11 @@ public class Controller {
      */
     private void handleLandslide(LandslideTile t) {
         board.getEntranceZone().addTile(t);
+        playLandslideSound();
+        view.shakeWindow();
+        view.showLandslideDialog();
         if (isSinglePlayer) {
-            view.showMessage("Landslide! The Thief steals all tiles from the board!");
+            view.showMessage("The Thief steals all tiles from the board!");
             stealAllTiles(board.getMosaicZone());
             stealAllTiles(board.getAmphoraZone());
             stealAllTiles(board.getSkeletonZone());
@@ -196,7 +204,6 @@ public class Controller {
         checkGameOver(board.getEntranceZone());
         if (!gameFinished) {
             endTurn();
-            startTurn();
         }
     }
 
@@ -234,7 +241,7 @@ public class Controller {
             Map<Player, Integer> statuePoints = calculateStatuePoints();
             for (Player p : players) {
                 int score = p.computePoints();
-                score = +statuePoints.getOrDefault(p, 0); // Get statue points
+                score += statuePoints.getOrDefault(p, 0); // Get statue points
                 scoreboard.append(p.getName()).append(": ").append(score).append("\n");
 
                 // Determine winner(s)
@@ -262,6 +269,8 @@ public class Controller {
 
             // 4. Send the final string to the View to display in a popup/dialog
             view.showMessage(scoreboard.toString());
+            view.setButtonsEnabled(false);
+            view.scheduleExitAfterDelay(10_000);
         }
     }
 
@@ -438,7 +447,6 @@ public class Controller {
      * @param playerIndex The index of the player (0-3).
      */
     private void playMusicForPlayer(int playerIndex) {
-        if (true) return;
         if (isMuted) return;
 
         // Stop old music
@@ -528,5 +536,28 @@ public class Controller {
         });
 
         gameTimer.start();
+    }
+    private void playLandslideSound() {
+        try {
+            // Use a short WAV/AIFF/au sound; Java Sound handles these best.
+            File soundFile = new File("music/landslide.wav"); // adjust path and format
+            if (!soundFile.exists()) {
+                System.err.println("Landslide sound not found: " + soundFile.getAbsolutePath());
+                return;
+            }
+
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.start();
+        } catch (Exception e) {
+            System.err.println("Error playing landslide sound: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    public Player getCurrentPlayer() {
+        if (players == null || players.isEmpty()) return null;
+        if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return null;
+        return players.get(currentPlayerIndex);
     }
 }
