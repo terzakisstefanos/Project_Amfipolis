@@ -71,6 +71,7 @@ public class Controller {
         while (numPlayers==-1){
             numPlayers = view.promptPlayerCount();
         }
+        numPlayers++;
         this.isSinglePlayer = (numPlayers == 1);
         for (int i = 1; i <= numPlayers; i++) {
             players.add(new Player("Player " + i));
@@ -84,6 +85,9 @@ public class Controller {
         playMusicForPlayer(0);
         view.setDrawButtonListener(e -> {
             startTurn();
+        });
+        view.setEndTurnButtonListener(e -> {
+            endTurn();
         });
     }
 
@@ -107,16 +111,23 @@ public class Controller {
                 } else if (tile.getClass() == StatueTile.class) {
                     board.getStatueZone().addTile(tile);
                 } else if (tile.getClass() == LandslideTile.class) {
+                    view.showMessage("landslide");
                     handleLandslide((LandslideTile) tile);
                     return;
                 }
             }
         }
         startTimer();
+        view.updateView();
         playMusicForPlayer(currentPlayerIndex);
         Zone zone = selectZone(null, true);
         current.setLastVisitedZone(zone);
-        assert zone != null;
+        if (zone == null) {
+            view.showErrorMessage("No zone selected. Ending turn.");
+            view.updateView();
+            endTurn();
+            return;
+        }
         if (!zone.isEmpty()) {
             Tile drawnTile = zone.removeTile();
             players.get(currentPlayerIndex).addTile(drawnTile);
@@ -124,7 +135,7 @@ public class Controller {
         // Check again if not empty before asking for second tile
         if (!zone.isEmpty()) {
             view.updateView();
-            if (howmany() == 2) {
+            if (howmany() == 1) {
                 Tile drawnTile2 = zone.removeTile();
                 current.addTile(drawnTile2);
             }
@@ -150,8 +161,8 @@ public class Controller {
             }
         }
         view.updateView(); // update again
-        endTurn();
     }
+
 
     /**
      * Ends the current player's turn manually.
@@ -185,6 +196,7 @@ public class Controller {
         checkGameOver(board.getEntranceZone());
         if (!gameFinished) {
             endTurn();
+            startTurn();
         }
     }
 
@@ -407,7 +419,8 @@ public class Controller {
      * @return The number of tiles selected by the user (1 or 2).
      */
     public int howmany() {
-        return view.promptTileCount();
+        int i= view.promptTileCount();
+        return i++;// because when the user selects 2 tiles the prompt returns 1
     }
 
     /**
@@ -425,6 +438,7 @@ public class Controller {
      * @param playerIndex The index of the player (0-3).
      */
     private void playMusicForPlayer(int playerIndex) {
+        if (true) return;
         if (isMuted) return;
 
         // Stop old music

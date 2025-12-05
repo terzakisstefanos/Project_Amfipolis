@@ -19,7 +19,7 @@ public class GameView extends JFrame {
     private Controller controller;
     private JLayeredPane boardPane; // Required by project description
     private JButton drawButton;
-    private JButton endTurnButton;
+    public JButton endTurnButton;
     private JLabel timerLabel;
     private JLabel infoLabel;
     private JButton muteButton;
@@ -65,6 +65,7 @@ public class GameView extends JFrame {
     public void updateView() {
         // 1. Clear everything from the board pane so we don't draw over old tiles
         boardPane.removeAll();
+
 
         // 2. Add the Background Image (Layer 0 - Bottom)
         // Adjust the path if your image is in a different folder structure
