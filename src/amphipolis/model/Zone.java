@@ -27,7 +27,7 @@ public class Zone implements java.io.Serializable{
      * Adds a tile to the zone.
      * * <b>Pre-condition:</b> The tile t must not be null.
      * <b>Post-condition:</b> The tile is added to the end of the list. The size increases by 1.
-     * * @param t The tile object to add.
+     * @param t The tile object to add.
      */
     public void addTile(Tile t) {
         if (t != null) {
@@ -39,7 +39,7 @@ public class Zone implements java.io.Serializable{
      * Removes the top/last tile from the zone.
      * * <b>Pre-condition:</b> The zone must not be empty.
      * <b>Post-condition:</b> The tile is removed from the list. The size decreases by 1.
-     * * @return The tile that was removed.
+     * @return The tile that was removed.
      */
     public Tile removeTile() {
         if (isEmpty()) {
@@ -52,7 +52,7 @@ public class Zone implements java.io.Serializable{
      * Returns a reference to the list of tiles.
      * * <b>Pre-condition:</b> The list is not empty .
      * <b>Post-condition:</b> Returns the direct reference to the internal list.
-     * * @return The ArrayList of tiles.
+     * @return The ArrayList of tiles.
      */
     public ArrayList<Tile> getTiles() {
         return tiles;

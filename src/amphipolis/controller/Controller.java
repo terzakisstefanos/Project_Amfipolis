@@ -183,7 +183,7 @@ public class Controller {
 
     /**
      * Handles the special logic when a Landslide Tile is drawn.
-     * * @param t The landslide tile that was drawn.
+     *@param t The landslide tile that was drawn.
      */
     private void handleLandslide(LandslideTile t) {
         board.getEntranceZone().addTile(t);

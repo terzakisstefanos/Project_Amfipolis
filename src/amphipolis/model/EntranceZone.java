@@ -20,7 +20,7 @@ public class EntranceZone extends Zone {
      * Checks if the entrance area is full.
      * <b>Post-condition:</b> Returns true if the number of tiles equals MAX_CAPACITY.
      * This signals the Controller to terminate the game.
-     * * @return true if full, false otherwise.
+     * @return true if full, false otherwise.
      */
     public boolean isFull() {
         ArrayList<Tile> tiles = getTiles();

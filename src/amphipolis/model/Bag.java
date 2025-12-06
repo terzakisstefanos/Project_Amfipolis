@@ -53,7 +53,7 @@ public class Bag implements java.io.Serializable{
      * Removes and returns a random tile from the bag.
      * * <b>Pre-condition:</b> The bag must not be empty.
      * <b>Post-condition:</b> The size of the bag decreases by 1.
-     * * @return A random Tile object.
+     * @return A random Tile object.
      */
     public Tile drawRandomTile() {
         if(isEmpty()){

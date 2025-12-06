@@ -567,6 +567,7 @@ public class GameView extends JFrame {
 
     /**
      * Connects the Draw button to the Controller.
+     * @param listener  the button listener
      */
     public void setDrawButtonListener(java.awt.event.ActionListener listener) {
         this.drawButton.addActionListener(listener);
@@ -574,6 +575,7 @@ public class GameView extends JFrame {
 
     /**
      * Connects the End Turn button to the Controller.
+     * @param listener  the button listener
      */
     public void setEndTurnButtonListener(java.awt.event.ActionListener listener) {
         this.endTurnButton.addActionListener(listener);
@@ -581,6 +583,7 @@ public class GameView extends JFrame {
 
     /**
      * Connects the Save button to the Controller.
+     *@param listener  the button listener
      */
     public void setSaveButtonListener(java.awt.event.ActionListener listener) {
         this.saveButton.addActionListener(listener);
@@ -588,6 +591,7 @@ public class GameView extends JFrame {
 
     /**
      * Connects the Use Character button to the Controller.
+     * @param listener  the button listener
      */
     public void setUseCharacterButtonListener(java.awt.event.ActionListener listener) {
         this.useCharacterButton.addActionListener(listener);
@@ -638,6 +642,7 @@ public class GameView extends JFrame {
 
     /**
      * Closes the window and exits the program after the given delay.
+     * @param delayMillis  the milliseconds its going to wait
      */
     public void scheduleExitAfterDelay(int delayMillis) {
         new javax.swing.Timer(delayMillis, e -> {
