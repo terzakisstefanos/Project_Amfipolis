@@ -16,6 +16,27 @@ public class GameView extends JFrame {
     private JButton endTurnButton;
     private JButton muteButton;
     private JLabel timerLabel;
+    private JButton saveButton;
+    private JButton useCharacterButton;
+    // Design-time positions (originally for a 1000x800 board)
+    private static final double MOSAIC_X_REL   =  50.0 / 1000.0;
+    private static final double MOSAIC_Y_REL   =  50.0 / 800.0;
+
+    private static final double STATUE_X_REL   = 700.0 / 1000.0;
+    private static final double STATUE_Y_REL   =  50.0 / 800.0;
+
+    private static final double AMPHORA_X_REL  =  50.0 / 1000.0;
+    private static final double AMPHORA_Y_REL  = 500.0 / 800.0;
+
+    private static final double SKELETON_X_REL = 700.0 / 1000.0;
+    private static final double SKELETON_Y_REL = 500.0 / 800.0;
+
+    private static final double ENTRANCE_X_REL = 380.0 / 1000.0;
+    private static final double ENTRANCE_Y_REL = 300.0 / 800.0;
+
+    // Zone box size (beige patch size) – tune once to match the artwork
+    private static final int ZONE_BOX_WIDTH  = 220;  // adjust if needed
+    private static final int ZONE_BOX_HEIGHT = 180;  // adjust if needed
 
 
     // Hand window components
@@ -25,36 +46,40 @@ public class GameView extends JFrame {
 
     public GameView(Controller controller) {
 
-            this.controller = controller;
+        this.controller = controller;
 
-            this.setTitle("Amphipolis Game");
-            this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            this.setLayout(new BorderLayout());
+        this.setTitle("Amphipolis Game");
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        this.setLayout(new BorderLayout());
 
-            // Center: board
-            this.boardPane = new JLayeredPane();
-            this.add(boardPane, BorderLayout.CENTER);
+        // Center: board
+        this.boardPane = new JLayeredPane();
+        this.add(boardPane, BorderLayout.CENTER);
 
-            // Right: player bag / hand
-            initHandPanel();
-            this.add(createHandContainer(), BorderLayout.EAST);
+        // Right: player bag / hand
+        initHandPanel();
+        this.add(createHandContainer(), BorderLayout.EAST);
 
-            // Bottom: controls
-            this.drawButton = new JButton("Draw Tiles");
-            this.endTurnButton = new JButton("End Turn");
-            this.muteButton = new JButton("Mute");
-            this.timerLabel = new JLabel("Time: 30");
+        // Bottom: controls
+        this.drawButton = new JButton("Draw Tiles");
+        this.endTurnButton = new JButton("End Turn");
+        this.muteButton = new JButton("Mute");
+        this.timerLabel = new JLabel("Time: 30");
+        this.saveButton = new JButton("Save Game");
+        this.useCharacterButton = new JButton("Use Character");
 
-            JPanel controlPanel = new JPanel();
-            controlPanel.add(timerLabel);
-            controlPanel.add(drawButton);
-            controlPanel.add(endTurnButton);
-            controlPanel.add(muteButton);
-            this.add(controlPanel, BorderLayout.SOUTH);
+        JPanel controlPanel = new JPanel();
+        controlPanel.add(timerLabel);
+        controlPanel.add(drawButton);
+        controlPanel.add(endTurnButton);
+        controlPanel.add(saveButton);
+        controlPanel.add(muteButton);
+        controlPanel.add(useCharacterButton);
+        this.add(controlPanel, BorderLayout.SOUTH);
 
-            this.setSize(1000, 800);
-            this.setLocationRelativeTo(null);
-            this.setVisible(true);
+        this.setSize(1000, 800);
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
         // If you want the hand window to track the main window position:
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -106,6 +131,7 @@ public class GameView extends JFrame {
         int imgH = bgOriginal.getHeight(null);
 
         if (imgW > 0 && imgH > 0) {
+            // Scale background while preserving aspect ratio
             double scaleX = (double) panelW / imgW;
             double scaleY = (double) panelH / imgH;
             double scale = Math.min(scaleX, scaleY);
@@ -123,62 +149,99 @@ public class GameView extends JFrame {
 
             amphipolis.model.Board board = controller.getBoard();
             if (board != null) {
-                // Relative positions on the board image (tune to fit your artwork)
-                double mosaicRelX   = 0.08;
-                double mosaicRelY   = 0.10;
-                double statueRelX   = 0.70;
-                double statueRelY   = 0.10;
-                double amphoraRelX  = 0.08;
-                double amphoraRelY  = 0.65;
-                double skeletonRelX = 0.70;
-                double skeletonRelY = 0.65;
-                double entranceRelX = 0.42;
-                double entranceRelY = 0.40;
+                // Compute box top-left positions using original design-time coordinates
+                int boxX_mosaic   = offsetX + (int) (MOSAIC_X_REL   * drawW);
+                int boxY_mosaic   = offsetY + (int) (MOSAIC_Y_REL   * drawH);
 
-                int mosaicX   = offsetX + (int) (mosaicRelX   * drawW);
-                int mosaicY   = offsetY + (int) (mosaicRelY   * drawH);
-                int statueX   = offsetX + (int) (statueRelX   * drawW);
-                int statueY   = offsetY + (int) (statueRelY   * drawH);
-                int amphoraX  = offsetX + (int) (amphoraRelX  * drawW);
-                int amphoraY  = offsetY + (int) (amphoraRelY  * drawH);
-                int skeletonX = offsetX + (int) (skeletonRelX * drawW);
-                int skeletonY = offsetY + (int) (skeletonRelY * drawH);
-                int entranceX = offsetX + (int) (entranceRelX * drawW);
-                int entranceY = offsetY + (int) (entranceRelY * drawH);
+                int boxX_statue   = offsetX + (int) (STATUE_X_REL   * drawW);
+                int boxY_statue   = offsetY + (int) (STATUE_Y_REL   * drawH);
 
-                drawZone(board.getMosaicZone(),   mosaicX,   mosaicY);
-                drawZone(board.getStatueZone(),   statueX,   statueY);
-                drawZone(board.getAmphoraZone(),  amphoraX,  amphoraY);
-                drawZone(board.getSkeletonZone(), skeletonX, skeletonY);
-                drawZone(board.getEntranceZone(), entranceX, entranceY);
+                int boxX_amphora  = offsetX + (int) (AMPHORA_X_REL  * drawW);
+                int boxY_amphora  = offsetY + (int) (AMPHORA_Y_REL  * drawH);
+
+                int boxX_skeleton = offsetX + (int) (SKELETON_X_REL * drawW);
+                int boxY_skeleton = offsetY + (int) (SKELETON_Y_REL * drawH);
+
+                int boxX_entrance = offsetX + (int) (ENTRANCE_X_REL * drawW);
+                int boxY_entrance = offsetY + (int) (ENTRANCE_Y_REL * drawH);
+
+                // Draw zones using these box coords (drawZone centers the grid inside)
+                drawZone(board.getMosaicZone(),   boxX_mosaic,   boxY_mosaic);
+                drawZone(board.getStatueZone(),   boxX_statue,   boxY_statue);
+                drawZone(board.getAmphoraZone(),  boxX_amphora,  boxY_amphora);
+                drawZone(board.getSkeletonZone(), boxX_skeleton, boxY_skeleton);
+                drawZone(board.getEntranceZone(), boxX_entrance, boxY_entrance);
             }
         }
 
         boardPane.revalidate();
         boardPane.repaint();
 
-        // Update the right-side bag
+        // If you have a right-side player bag:
         updateHandPanel();
     }
 
-    private void drawZone(amphipolis.model.Zone zone, int startX, int startY) {
+    private void drawZone(amphipolis.model.Zone zone, int boxX, int boxY) {
         if (zone == null) return;
 
         java.util.ArrayList<amphipolis.model.Tile> tiles = zone.getTiles();
-        int x = startX;
-        int y = startY;
+        int totalTiles = tiles.size();
+
+        int boxWidth  = ZONE_BOX_WIDTH;
+        int boxHeight = ZONE_BOX_HEIGHT;
+
+        // DEBUG: red border, to verify exact match
+        JLabel box = new JLabel();
+        box.setBorder(BorderFactory.createLineBorder(Color.RED));
+        box.setBounds(boxX, boxY, boxWidth, boxHeight);
+        boardPane.add(box, Integer.valueOf(1));
+
+        int maxVisible = 9;
+        int cols = 3;
         int tileWidth = 50;
         int tileHeight = 50;
-        int spacing = 10;
+        int gap = 5;
 
-        for (amphipolis.model.Tile t : tiles) {
+        int visibleCount = Math.min(maxVisible, totalTiles);
+        int rows = (int) Math.ceil(visibleCount / (double) cols);
+        if (rows == 0) rows = 1;
+
+        int gridWidth  = cols * tileWidth + (cols - 1) * gap;
+        int gridHeight = rows * tileHeight + (rows - 1) * gap;
+
+        int gridX = boxX + (boxWidth  - gridWidth)  / 2;
+        int gridY = boxY + (boxHeight - gridHeight) / 2;
+
+        for (int i = 0; i < visibleCount; i++) {
+            amphipolis.model.Tile t = tiles.get(i);
+            int row = i / cols;
+            int col = i % cols;
+
+            int x = gridX + col * (tileWidth + gap);
+            int y = gridY + row * (tileHeight + gap);
+
             ImageIcon tileIcon = new ImageIcon(t.getImagePath());
             Image scaledImage = tileIcon.getImage().getScaledInstance(tileWidth, tileHeight, Image.SCALE_SMOOTH);
             JLabel tileLabel = new JLabel(new ImageIcon(scaledImage));
             tileLabel.setBounds(x, y, tileWidth, tileHeight);
-            boardPane.add(tileLabel, Integer.valueOf(1));
+            boardPane.add(tileLabel, Integer.valueOf(2));
+        }
 
-            x += tileWidth + spacing;
+        int extra = totalTiles - visibleCount;
+        if (extra > 0) {
+            JLabel extraLabel = new JLabel("+" + extra);
+            extraLabel.setForeground(Color.WHITE);
+            extraLabel.setOpaque(true);
+            extraLabel.setBackground(new Color(0, 0, 0, 170));
+            extraLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            int labelW = 40;
+            int labelH = 20;
+            int labelX = boxX + boxWidth - labelW - 5;
+            int labelY = boxY + 5;
+
+            extraLabel.setBounds(labelX, labelY, labelW, labelH);
+            boardPane.add(extraLabel, Integer.valueOf(3));
         }
     }
 
@@ -463,7 +526,12 @@ public class GameView extends JFrame {
     public void setEndTurnButtonListener(java.awt.event.ActionListener listener) {
         this.endTurnButton.addActionListener(listener);
     }
-
+    public void setSaveButtonListener(java.awt.event.ActionListener listener) {
+        this.saveButton.addActionListener(listener);
+    }
+    public void setUseCharacterButtonListener(java.awt.event.ActionListener listener) {
+        this.useCharacterButton.addActionListener(listener);
+    }
     public void shakeWindow() {
         final int shakeDistance = 10;   // pixels
         final int shakeDuration = 400;  // total duration in ms
@@ -504,10 +572,13 @@ public class GameView extends JFrame {
                 icon
         );
     }
+
     public void setButtonsEnabled(boolean enabled) {
         drawButton.setEnabled(enabled);
         endTurnButton.setEnabled(enabled);
         muteButton.setEnabled(enabled);
+        saveButton.setEnabled(enabled);
+        useCharacterButton.setEnabled(enabled);
     }
 
     /**
@@ -521,6 +592,7 @@ public class GameView extends JFrame {
             start();
         }};
     }
+
     private void initHandPanel() {
         handPanel = new JPanel();
         handPanel.setLayout(new BoxLayout(handPanel, BoxLayout.Y_AXIS));
@@ -542,6 +614,19 @@ public class GameView extends JFrame {
         container.add(scroll, BorderLayout.CENTER);
 
         return container;
+    }
+    public String promptSaveFilePath() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Choose where to save the game");
+        FileFilter filter = new FileNameExtensionFilter("Saved Games", "ser");
+        chooser.setFileFilter(filter);
+
+        int result = chooser.showSaveDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            return file.getAbsolutePath();
+        }
+        return null; // user cancelled
     }
 }
 

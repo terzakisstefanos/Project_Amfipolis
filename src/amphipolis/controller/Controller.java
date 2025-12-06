@@ -43,6 +43,13 @@ public class Controller {
     public void startGame() {
         this.view = new GameView(this);
         view.setMuteButtonListener(e -> toggleMute());
+        view.setSaveButtonListener(e -> {
+            String path = view.promptSaveFilePath();
+            if (path != null) {
+                saveGame(path);
+            }
+        });
+        view.setUseCharacterButtonListener(e -> useCharacter());
         boolean wantToLoad = view.promptLoadGame();
         if (wantToLoad) {
             int loadType = view.promptLoadType(); // 0 = Last Saved, 1 = Custom File
@@ -67,8 +74,8 @@ public class Controller {
         this.board.init();
         this.gameFinished = false;
         this.players = new ArrayList<>();
-        int numPlayers=-1;
-        while (numPlayers==-1){
+        int numPlayers = -1;
+        while (numPlayers == -1) {
             numPlayers = view.promptPlayerCount();
         }
         numPlayers++;
@@ -144,25 +151,7 @@ public class Controller {
         }
 
         view.updateView(); // update the view
-        if (view.promptUseCharacter()) {
-            boolean validCharacterSelected = false;
 
-            while (!validCharacterSelected) {
-                int charIndex = view.promptCharacterSelection();
-                if (charIndex == -1) {
-                    break;
-                }
-                Character chosenChar = current.getCharacters()[charIndex];// select the chosen character
-                if (!chosenChar.getIsUsed()) {
-                    chosenChar.useAbility(current, this);
-                    validCharacterSelected = true;
-                    view.updateView();
-                } else {
-                    view.showErrorMessage("You have already used this character!");
-                }
-            }
-        }
-        view.updateView(); // update again
     }
 
 
@@ -428,7 +417,7 @@ public class Controller {
      * @return The number of tiles selected by the user (1 or 2).
      */
     public int howmany() {
-        int i= view.promptTileCount();
+        int i = view.promptTileCount();
         return i++;// because when the user selects 2 tiles the prompt returns 1
     }
 
@@ -537,6 +526,7 @@ public class Controller {
 
         gameTimer.start();
     }
+
     private void playLandslideSound() {
         try {
             // Use a short WAV/AIFF/au sound; Java Sound handles these best.
@@ -555,9 +545,47 @@ public class Controller {
             e.printStackTrace();
         }
     }
+
     public Player getCurrentPlayer() {
         if (players == null || players.isEmpty()) return null;
         if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return null;
         return players.get(currentPlayerIndex);
+    }
+
+    public void useCharacter() {
+        if (gameFinished) return;
+        if (players == null || players.isEmpty()) return;
+        if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return;
+
+        Player current = players.get(currentPlayerIndex);
+
+        boolean validCharacterSelected = false;
+
+        while (!validCharacterSelected) {
+            int charIndex = view.promptCharacterSelection(); // or promptCharacterSelection()
+            if (charIndex == -1) {
+                break; // user cancelled
+            }
+
+            Character[] chars = current.getCharacters();
+            if (chars == null || charIndex < 0 || charIndex >= chars.length) {
+                view.showErrorMessage("Invalid character selection.");
+                break;
+            }
+
+            Character chosenChar = chars[charIndex];
+            if (chosenChar == null) {
+                view.showErrorMessage("Selected character is not initialized.");
+                break;
+            }
+
+            if (!chosenChar.getIsUsed()) {
+                chosenChar.useAbility(current, this);
+                validCharacterSelected = true;
+                view.updateView();
+            } else {
+                view.showErrorMessage("You have already used this character!");
+            }
+        }
     }
 }
