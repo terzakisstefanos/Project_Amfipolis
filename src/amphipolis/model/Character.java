@@ -12,7 +12,10 @@ public abstract class Character implements java.io.Serializable{
 
     private String name;
     private boolean isUsed;
-
+    /**
+     * Constructor.
+     * @param name The name of the character (e.g., "Assistant", "Archaeologist").
+     */
     public Character(String name) {
             this.name=name;
     }

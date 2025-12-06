@@ -35,15 +35,27 @@ public class Board implements java.io.Serializable{
     public Zone getMosaicZone() {
         return mosaicZone;
     }
-
+    /**
+     * Accessor for the Amphora Zone.
+     *
+     * @return The Zone object responsible for Amphora tiles.
+     */
     public Zone getAmphoraZone() {
         return amphoraZone;
     }
-
+    /**
+     * Accessor for the Skeleton Zone.
+     *
+     * @return The Zone object responsible for Skeleton tiles.
+     */
     public Zone getSkeletonZone() {
         return skeletonZone;
     }
-
+    /**
+     * Accessor for the Statue Zone.
+     *
+     * @return The Zone object responsible for Statue tiles.
+     */
     public Zone getStatueZone() {
         return statueZone;
     }

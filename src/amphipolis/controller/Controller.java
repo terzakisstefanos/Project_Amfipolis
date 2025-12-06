@@ -483,7 +483,9 @@ public class Controller {
     }
 
     /**
-     * Toggles the sound on/off.
+     * Toggles the game's audio mute state.
+     * Stops the music if muted, or resumes the current player's track if unmuted.
+     * Updates the view's mute button text.
      */
     public void toggleMute() {
         isMuted = !isMuted;
@@ -526,7 +528,10 @@ public class Controller {
 
         gameTimer.start();
     }
-
+    /**
+     * Plays a specific sound effect indicating a landslide occurred.
+     * This uses a standard WAV file for compatibility.
+     */
     private void playLandslideSound() {
         try {
             // Use a short WAV/AIFF/au sound; Java Sound handles these best.
@@ -545,13 +550,21 @@ public class Controller {
             e.printStackTrace();
         }
     }
-
+    /**
+     * Retrieves the player whose turn it currently is.
+     *
+     * @return The Player object at the current player index, or null if the list is empty.
+     */
     public Player getCurrentPlayer() {
         if (players == null || players.isEmpty()) return null;
         if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return null;
         return players.get(currentPlayerIndex);
     }
-
+    /**
+     * Handles the logic for using a Character card's special ability.
+     * Validates the player's selection and delegates the action to the specific Character subclass.
+     * Checks if the character has already been used and updates the view upon success.
+     */
     public void useCharacter() {
         if (gameFinished) return;
         if (players == null || players.isEmpty()) return;

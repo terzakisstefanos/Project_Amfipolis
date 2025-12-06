@@ -532,6 +532,10 @@ public class GameView extends JFrame {
     public void setUseCharacterButtonListener(java.awt.event.ActionListener listener) {
         this.useCharacterButton.addActionListener(listener);
     }
+    /**
+     * Performs a visual "shake" animation on the game window.
+     * Used to provide visual feedback when a Landslide occurs.
+     */
     public void shakeWindow() {
         final int shakeDistance = 10;   // pixels
         final int shakeDuration = 400;  // total duration in ms
@@ -555,7 +559,9 @@ public class GameView extends JFrame {
         });
         shakeTimer.start();
     }
-
+    /**
+     * Displays a dialog with an image alerting the players that a Landslide has occurred.
+     */
     public void showLandslideDialog() {
         // Adjust path to your landslide image
         ImageIcon icon = new ImageIcon("images/landslide.png");
@@ -572,7 +578,12 @@ public class GameView extends JFrame {
                 icon
         );
     }
-
+    /**
+     * Enables or disables the main game control buttons.
+     * Useful for preventing input during animations or after the game has ended.
+     *
+     * @param enabled true to enable buttons, false to disable them.
+     */
     public void setButtonsEnabled(boolean enabled) {
         drawButton.setEnabled(enabled);
         endTurnButton.setEnabled(enabled);
@@ -615,6 +626,11 @@ public class GameView extends JFrame {
 
         return container;
     }
+    /**
+     * Opens a file chooser dialog to allow the user to select a location to save the game.
+     *
+     * @return The absolute path of the selected file, or null if the user cancelled.
+     */
     public String promptSaveFilePath() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Choose where to save the game");
