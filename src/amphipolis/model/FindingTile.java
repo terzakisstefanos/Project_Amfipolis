@@ -1,7 +1,7 @@
 package amphipolis.model;
 
 /**
- * Abstract class representing tiles that the player can collect (Mosaics, Statues, etc.).
+ * Abstract class representing tiles that the player can collect.
  * These are distinct from Landslide tiles because they score points.
  */
 public abstract class FindingTile extends Tile {

@@ -1,12 +1,12 @@
 package amphipolis.model;
 
 /**
- * Represents a Statue tile (Caryatid or Sphinx).
- * Statues score points based on who has the majority (most) of them.
+ * Represents a Statue tile
+ * Statues score points based on who has the majority  of them.
  */
 public class StatueTile extends FindingTile {
 
-    private boolean isSphinx; // true = Sphinx, false = Caryatid
+    private final boolean isSphinx; // true = Sphinx, false = Caryatid
 
     /**
      * Constructor.

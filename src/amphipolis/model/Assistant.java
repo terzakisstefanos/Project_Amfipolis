@@ -9,7 +9,7 @@ import amphipolis.controller.Controller;
 public class Assistant extends Character {
 
     public Assistant() {
-        super("Assistant");
+        super();
     }
 
     @Override

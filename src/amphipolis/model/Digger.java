@@ -9,7 +9,7 @@ import amphipolis.controller.Controller;
 public class Digger extends Character {
 
     public Digger() {
-        super("Digger");
+        super();
     }
 
     @Override
@@ -24,7 +24,7 @@ public class Digger extends Character {
 
         // Check again if not empty before asking for second tile
         if (!zone.isEmpty()) {
-            if (controller.howmany() == 2) {
+            if (controller.howmany() == 1) {// for the same reason we said earlier
                 Tile drawnTile = zone.removeTile();
                 player.addTile(drawnTile);
             }

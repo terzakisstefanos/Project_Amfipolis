@@ -10,11 +10,10 @@ import java.io.*;
 import javax.sound.sampled.*;
 
 /**
- * The Controller class acts as the central coordinator (Brain) of the MVC architecture.
- * It manages the game loop, enforces rules (turn order, landslide mechanics), and synchronizes
- * the Model state with the View.
+ * The Controller class acts as the central coordinator of the MVC architecture.
+ * It manages the game loop, enforces rules and synchronizes the Model state with the View.
  * <b>Invariant:</b> There is always exactly one active player during a turn.
- * <b>Invariant:</b> The game state (playing vs. finished) is explicitly tracked.
+ * <b>Invariant:</b> The game state is explicitly tracked.
  * <b>Invariant:</b> The Controller maintains a valid reference to the Board and the Players throughout the game lifecycle.
  */
 public class Controller {
@@ -43,7 +42,7 @@ public class Controller {
 
     /**
      * Starts the game setup process.
-     * <b>Pre-condition:</b> The game must not already be running (gameFinished should be true or uninitialized).
+     * <b>Pre-condition:</b> The game must not already be running.
      * <b>Post-condition:</b> Initializes Players, Board, Bag, and starts the first turn.
      */
     public void startGame() {
@@ -162,7 +161,7 @@ public class Controller {
 
     /**
      * Ends the current player's turn manually.
-     * <b>Pre-condition:</b> The player must be in the "Action Phase" of their turn.
+     * <b>Pre-condition:</b> The player must be in the Action Phase of their turn.
      * <b>Post-condition:</b> Control passes to the next player index. startTurn() is called for them.
      */
     public void endTurn() {
@@ -273,7 +272,7 @@ public class Controller {
     }
 
     /**
-     * Calculates the points awarded for Statue tiles (Sphinxes and Caryatids).
+     * Calculates the points awarded for Statue tiles
      * Points are awarded based on who has the majority of each statue type.
      * <b>Pre-condition:</b> The game must be in the scoring phase.
      * <b>Post-condition:</b> Returns a map associating each player with their statue bonus points.
@@ -284,8 +283,8 @@ public class Controller {
         Map<Player, Integer> points = new HashMap<>();
         for (Player p : players) points.put(p, 0);
 
-        points = assignMajorityPoints(points, true);  // Pass 1: Sphinxes
-        points = assignMajorityPoints(points, false); // Pass 2: Caryatids
+        points = assignMajorityPoints(points, true);
+        points = assignMajorityPoints(points, false);
 
         return points;
     }
@@ -293,7 +292,6 @@ public class Controller {
     /**
      * Helper method to determine the majority owner for a specific type of statue.
      * Rules: 6 points for most, 3 for others, 0 for least.
-     *
      * @param currentPoints The map of points accumulated so far.
      * @param isSphinx      True to calculate for Sphinxes, False for Caryatids.
      * @return The updated map of points.
@@ -489,70 +487,42 @@ public class Controller {
      * If the timer reaches 0, it automatically ends the turn.
      */
     private void startTimer() {
-        // Stop existing timer if running
-        if (gameTimer != null) {
+        if (gameTimer != null) {// Stop existing timer if running
             gameTimer.stop();
         }
-
         timeLeft = TURN_DURATION;
         view.updateTimer(timeLeft);
-
-        // Create a new timer that ticks every 1000ms (1 second)
-        gameTimer = new Timer(1000, e -> {
+        gameTimer = new Timer(1000, e -> {// Create a new timer that ticks every 1 second
             timeLeft--;
             view.updateTimer(timeLeft);
-
             if (timeLeft <= 0) {
                 gameTimer.stop();
                 view.showMessage("Time's up! Turn ended.");
-                endTurn(); // Force end of turn
+                endTurn();
             }
         });
-
         gameTimer.start();
     }
 
     /**
-     * Plays the background music associated with the current player using Java Sound SPI (jFLAC).
+     * Plays the background music associated with the current player.
+     * Now updated to play .wav files natively.
      *
      * @param playerIndex The index of the player (0-3).
      */
     private void playMusicForPlayer(int playerIndex) {
         if (isMuted) return;
-
-        // Stop old music
-        if (musicClip != null && musicClip.isRunning()) {
+        if (musicClip != null && musicClip.isRunning()) {// Stop old music
             musicClip.stop();
             musicClip.close();
         }
-
         try {
-            // 1. Get the file (e.g., "music/Player1.flac")
-            String filePath = "music/Player" + (playerIndex + 1) + ".flac";
+            String filePath = "music/Player" + (playerIndex + 1) + ".wav";
             File musicFile = new File(filePath);
-
             if (musicFile.exists()) {
-                // 2. Get the raw (compressed) audio stream
-                AudioInputStream rawStream = AudioSystem.getAudioInputStream(musicFile);
-                AudioFormat baseFormat = rawStream.getFormat();
-
-                // 3. Create a "Decoded" format (PCM Signed) that Java can actually play
-                AudioFormat decodedFormat = new AudioFormat(
-                        AudioFormat.Encoding.PCM_SIGNED,
-                        baseFormat.getSampleRate(),
-                        16, // 16-bit is standard for playback
-                        baseFormat.getChannels(),
-                        baseFormat.getChannels() * 2, // Frame Size
-                        baseFormat.getSampleRate(),
-                        false // Big Endian
-                );
-
-                // 4. Convert the FLAC stream to the Decoded PCM stream
-                AudioInputStream decodedStream = AudioSystem.getAudioInputStream(decodedFormat, rawStream);
-
-                // 5. Play the decoded stream
-                musicClip = AudioSystem.getClip();
-                musicClip.open(decodedStream);
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(musicFile);
+                musicClip = AudioSystem.getClip();// play the audio
+                musicClip.open(audioStream);
                 musicClip.loop(Clip.LOOP_CONTINUOUSLY);
                 musicClip.start();
             } else {
@@ -572,13 +542,11 @@ public class Controller {
     public void toggleMute() {
         isMuted = !isMuted;
         view.updateMuteButton(isMuted);
-
         if (isMuted) {
             if (musicClip != null && musicClip.isRunning()) {
                 musicClip.stop();
             }
         } else {
-            // Resume playing current player's music
             playMusicForPlayer(currentPlayerIndex);
         }
     }
@@ -589,13 +557,11 @@ public class Controller {
      */
     private void playLandslideSound() {
         try {
-            // Use a short WAV/AIFF/au sound; Java Sound handles these best.
-            File soundFile = new File("music/landslide.wav"); // adjust path and format
+            File soundFile = new File("music/landslide.wav");
             if (!soundFile.exists()) {
                 System.err.println("Landslide sound not found: " + soundFile.getAbsolutePath());
                 return;
             }
-
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
             Clip clip = AudioSystem.getClip();
             clip.open(audioIn);
@@ -618,7 +584,6 @@ public class Controller {
     public Board getBoard() {
         return board;
     }
-
     /**
      * Retrieves the player whose turn it currently is.
      *

@@ -93,7 +93,7 @@ public class GameView extends JFrame {
     }
 
     /**
-     * Initializes the separate window (JFrame) used to display the current player's hand.
+     * Initializes the separate window used to display the current player's hand.
      * Sets up the window's layout, size, and initial position relative to the main game window.
      */
     private void initHandWindow() {
@@ -120,7 +120,7 @@ public class GameView extends JFrame {
 
     /**
      * Initializes the panel responsible for displaying the player's collected tiles.
-     * Configures the layout manager (BoxLayout) and adds the title label.
+     * Configures the layout manager and adds the title label.
      */
     private void initHandPanel() {
         handPanel = new JPanel();
@@ -156,7 +156,7 @@ public class GameView extends JFrame {
     // =============================================================
 
     /**
-     * Updates the graphical interface (board + hand window).
+     * Updates the graphical interface
      */
     public void updateView() {
         boardPane.removeAll(); // Clear previous components
@@ -277,7 +277,7 @@ public class GameView extends JFrame {
     }
 
     /**
-     * Updates the side panel that displays the current player's collected tiles (hand).
+     * Updates the side panel that displays the current player's collected tiles.
      * This method refreshes the UI to reflect the current state of the player's inventory.
      */
     private void updateHandPanel() {
@@ -327,7 +327,7 @@ public class GameView extends JFrame {
     /**
      * Asks the user to choose the source of the save file.
      *
-     * @return 0 for "Last Saved Game", 1 for "Select File", or other codes as needed.
+     * @return 0 for "Last Saved Game", 1 for Select File, or other codes as needed.
      */
     public int promptLoadType() {
         Object[] options = {"Last saved", "Custom File"};
@@ -389,7 +389,7 @@ public class GameView extends JFrame {
     }
 
     /**
-     * Displays an error message to the user (usually with a warning icon).
+     * Displays an error message to the user
      *
      * @param error The error message content.
      */
@@ -400,7 +400,7 @@ public class GameView extends JFrame {
     /**
      * Asks the user for the number of players participating in the game.
      *
-     * @return The number of players (e.g., 1 or 4).
+     * @return The number of players
      */
     public int promptPlayerCount() {
         Object[] options = {"Single Player", "2 Players", "3 Players", "4 Players"};
@@ -419,7 +419,7 @@ public class GameView extends JFrame {
     /**
      * Prompts the user to select one of the four finding zones on the board.
      *
-     * @return An integer representing the zone (e.g., 0=Mosaic, 1=Amphora, etc.).
+     * @return An integer representing the zone.
      */
     public int promptZoneSelection() {
         Object[] options = {"Mosaic Zone", "Amphora Zone", "Skeleton Zone", "Statue Zone"};
@@ -436,7 +436,7 @@ public class GameView extends JFrame {
 
     /**
      * Prompts the user to specify how many tiles they wish to draw.
-     * This is typically used for the Digger character ability (1 or 2 tiles).
+     * This is typically used for the Digger character ability.
      *
      * @return The number of tiles selected.
      */
@@ -532,7 +532,7 @@ public class GameView extends JFrame {
     /**
      * Updates the timer label text.
      *
-     * @param seconds The integer seconds remaining (e.g., 29).
+     * @param seconds The integer seconds remaining.
      */
     public void updateTimer(int seconds) {
         this.timerLabel.setText("Time: " + seconds);
@@ -594,7 +594,7 @@ public class GameView extends JFrame {
     }
 
     /**
-     * Performs a visual "shake" animation on the game window.
+     * Performs a visual shake animation on the game window.
      * Used to provide visual feedback when a Landslide occurs.
      */
     public void shakeWindow() {
@@ -637,7 +637,7 @@ public class GameView extends JFrame {
     }
 
     /**
-     * Closes the window / exits the program after the given delay (milliseconds).
+     * Closes the window and exits the program after the given delay.
      */
     public void scheduleExitAfterDelay(int delayMillis) {
         new javax.swing.Timer(delayMillis, e -> {

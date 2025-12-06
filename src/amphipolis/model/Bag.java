@@ -6,13 +6,12 @@ import java.util.Collections;
 /**
  * Represents the bag containing all unassigned tiles in the game.
  * Responsible for securely storing tiles and providing them randomly to players.
- *
  * <b>Invariant:</b> The number of tiles in the bag must always be non-negative.
  * <b>Invariant:</b> The bag is initialized with a specific fixed set of tiles as defined by the game rules.
  */
 public class Bag implements java.io.Serializable{
 
-    private ArrayList<Tile> contents;
+    private final ArrayList<Tile> contents;
 
     /**
      * Constructs the bag and initializes it with all game tiles.

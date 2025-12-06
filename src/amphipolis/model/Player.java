@@ -12,10 +12,10 @@ import java.util.ArrayList;
  */
 public class Player {
 
-    private String name;
+    private final String name;
     private int score;
-    private ArrayList<Tile> collectedTiles;
-    private Character[] myCharacters;
+    private final ArrayList<Tile> collectedTiles;
+    private final Character[] myCharacters;
     private Zone lastVisitedZone;
     private Zone coderReservedZone;
 
@@ -186,19 +186,11 @@ public class Player {
     public Character[] getCharacters() {
         return myCharacters;
     }
-    /**
-     * Accessor for the player's current score.
-     * Note: This returns the score calculated by the last call to computePoints().
-     *
-     * @return The integer score.
-     */
-    public int GetScore() {
-        return score;
-    }
+
     /**
      * Accessor for the player's name.
      *
-     * @return The name string (e.g., "Player 1").
+     * @return The name string
      */
     public String getName() {
         return name;

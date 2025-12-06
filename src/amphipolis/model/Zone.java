@@ -4,17 +4,16 @@ import java.util.ArrayList;
 
 /**
  * Represents a generic area on the board where tiles can be placed and drawn.
- * Functions as a dynamic collection (First-In-Last-Out or generic collection) of tiles.
- *
+ * Functions as a dynamic collection of tiles.
  * <b>Invariant:</b> The internal list of tiles is never null.
- * <b>Invariant:</b> The zone stores generic Tile objects, allowing for polymorphism (holding Mosaics, Amphoras, etc.).
+ * <b>Invariant:</b> The zone stores generic Tile objects, allowing for polymorphism
  */
 public class Zone implements java.io.Serializable{
 
     /**
      * The list of tiles currently in this zone.
      */
-    private ArrayList<Tile> tiles;
+    private final ArrayList<Tile> tiles;
 
     /**
      * Constructor.
@@ -34,11 +33,10 @@ public class Zone implements java.io.Serializable{
         if (t != null) {
             tiles.add(t);
         }
-        return;
     }
 
     /**
-     * Removes the top/last tile from the zone (simulating a stack or queue).
+     * Removes the top/last tile from the zone.
      * * <b>Pre-condition:</b> The zone must not be empty.
      * <b>Post-condition:</b> The tile is removed from the list. The size decreases by 1.
      * * @return The tile that was removed.
@@ -52,8 +50,8 @@ public class Zone implements java.io.Serializable{
 
     /**
      * Returns a reference to the list of tiles.
-     * * <b>Pre-condition:</b> The list is not empty (according to your spec).
-     * <b>Post-condition:</b> Returns the direct reference (pointer) to the internal list.
+     * * <b>Pre-condition:</b> The list is not empty .
+     * <b>Post-condition:</b> Returns the direct reference to the internal list.
      * * @return The ArrayList of tiles.
      */
     public ArrayList<Tile> getTiles() {

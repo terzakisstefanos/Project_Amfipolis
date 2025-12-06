@@ -2,8 +2,7 @@ package amphipolis.model;
 
 /**
  * Represents the game board of Amphipolis.
- * Acts as the central container for the five distinct zones (Mosaic, Amphora, Skeleton, Statue, Entrance).
- *
+ * Acts as the central container for the five distinct zones.
  * <b>Invariant:</b> The board must always contain exactly 5 instantiated zones.
  * <b>Invariant:</b> The Entrance Zone is distinct from the other four "Finding" zones.
  */
@@ -28,7 +27,7 @@ public class Board implements java.io.Serializable{
     }
 
     /**
-     * Accessor for all the Zones.
+     * Accessor for the Mosaic Zone.
      *
      * @return The Zone object responsible for the tiles.
      */

@@ -2,11 +2,11 @@ package amphipolis.model;
 
 /**
  * Represents an Amphora tile.
- * Amphoras score points based on how many DIFFERENT colors the player has collected.
+ * Amphora's score points based on how many DIFFERENT colors the player has collected.
  */
 public class AmphoraTile extends FindingTile {
 
-    private Color color;
+    private final Color color;
 
     /**
      * Constructor.

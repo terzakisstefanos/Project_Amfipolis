@@ -3,12 +3,12 @@ package amphipolis.model;
 import amphipolis.controller.Controller;
 
 /**
- * Represents the Coder (Programmer) character card.
+ * Represents the Coder character card.
  * Ability: Allows the player to reserve an area to draw extra tiles in the next turn.
  */
 public class Coder extends Character {
     public Coder() {
-        super("Coder");
+        super();
     }
 
     @Override

@@ -9,7 +9,7 @@ import amphipolis.controller.Controller;
 public class Archaeologist extends Character {
 
     public Archaeologist() {
-        super("Archaeologist");
+        super();
     }
 
     @Override
@@ -26,7 +26,7 @@ public class Archaeologist extends Character {
 
             // Check if they want a second one AND if there are tiles left in THAT SAME zone
             if (!zone.isEmpty()) {
-                if (controller.howmany() == 2) {
+                if (controller.howmany() == 1) {// because if the user selects 2 the return of how many is 1
                     Tile drawnTile2 = zone.removeTile();
                     player.addTile(drawnTile2);
                 }
