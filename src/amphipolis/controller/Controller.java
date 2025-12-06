@@ -34,6 +34,12 @@ public class Controller {
     private boolean isMuted = false;
     private long clipTimePosition = 0;
 
+    public Controller() {
+    }
+
+    // =============================================================
+    // GAME FLOW
+    // =============================================================
 
     /**
      * Starts the game setup process.
@@ -154,7 +160,6 @@ public class Controller {
 
     }
 
-
     /**
      * Ends the current player's turn manually.
      * <b>Pre-condition:</b> The player must be in the "Action Phase" of their turn.
@@ -172,6 +177,10 @@ public class Controller {
             startTurn();
         }
     }
+
+    // =============================================================
+    // GAME LOGIC
+    // =============================================================
 
     /**
      * Handles the special logic when a Landslide Tile is drawn.
@@ -213,7 +222,7 @@ public class Controller {
      * Checks if the game should end based on the Entrance Zone status.
      *
      * @param zone The entrance zone to check.
-     *             <b>Post-condition:</b> If zone.isFull() is true, gameFinished becomes true and the GUI displays the results.
+     * <b>Post-condition:</b> If zone.isFull() is true, gameFinished becomes true and winners are calculated.
      */
     private void checkGameOver(EntranceZone zone) {
         if (zone.isFull()) {
@@ -320,54 +329,49 @@ public class Controller {
         return currentPoints;
     }
 
-    /**
-     * Saves the current game state to a file using Java Serialization.
-     *
-     * @param filePath The location to save the file (e.g., "saved_game.ser").
-     */
-    public void saveGame(String filePath) {
-        if (!filePath.endsWith(".ser")) {// make the extension
-            filePath += ".ser";
-        }
-
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            // we need to load them with the same order
-            out.writeObject(players);
-            out.writeInt(currentPlayerIndex);
-            out.writeObject(bag);
-            out.writeObject(board);
-            out.writeBoolean(gameFinished);
-            out.writeObject(thief);
-            out.writeBoolean(isSinglePlayer);
-            view.showMessage("Game saved successfully to " + filePath);
-        } catch (IOException i) {
-            view.showErrorMessage("Failed to save game: " + i.getMessage());
-            i.printStackTrace();
-        }
-    }
+    // =============================================================
+    // PLAYER ACTIONS
+    // =============================================================
 
     /**
-     * Loads a game state from a file and restores the application state.
-     *
-     * @param filePath The location of the save file.
+     * Handles the logic for using a Character card's special ability.
+     * Validates the player's selection and delegates the action to the specific Character subclass.
+     * Checks if the character has already been used and updates the view upon success.
      */
-    public void loadGame(String filePath) {
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
-            this.players = (ArrayList<Player>) in.readObject();
-            this.currentPlayerIndex = in.readInt();
-            this.bag = (Bag) in.readObject();
-            this.board = (Board) in.readObject();
-            this.gameFinished = in.readBoolean();
-            this.thief = (Player) in.readObject();
-            this.isSinglePlayer = in.readBoolean();
-            view.showMessage("Game loaded successfully!");
-            view.updateView();
-        } catch (IOException i) {
-            view.showErrorMessage("Could not load file: " + i.getMessage());
-            i.printStackTrace();
-        } catch (ClassNotFoundException c) {
-            view.showErrorMessage("Game file is corrupted or incompatible.");
-            c.printStackTrace();
+    public void useCharacter() {
+        if (gameFinished) return;
+        if (players == null || players.isEmpty()) return;
+        if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return;
+
+        Player current = players.get(currentPlayerIndex);
+
+        boolean validCharacterSelected = false;
+
+        while (!validCharacterSelected) {
+            int charIndex = view.promptCharacterSelection(); // or promptCharacterSelection()
+            if (charIndex == -1) {
+                break; // user cancelled
+            }
+
+            Character[] chars = current.getCharacters();
+            if (chars == null || charIndex < 0 || charIndex >= chars.length) {
+                view.showErrorMessage("Invalid character selection.");
+                break;
+            }
+
+            Character chosenChar = chars[charIndex];
+            if (chosenChar == null) {
+                view.showErrorMessage("Selected character is not initialized.");
+                break;
+            }
+
+            if (!chosenChar.getIsUsed()) {
+                chosenChar.useAbility(current, this);
+                validCharacterSelected = true;
+                view.updateView();
+            } else {
+                view.showErrorMessage("You have already used this character!");
+            }
         }
     }
 
@@ -421,13 +425,91 @@ public class Controller {
         return i++;// because when the user selects 2 tiles the prompt returns 1
     }
 
+    // =============================================================
+    // PERSISTENCE
+    // =============================================================
+
     /**
-     * Accessor for the game board.
+     * Saves the current game state to a file using Java Serialization.
      *
-     * @return The Board object associated with this controller.
+     * @param filePath The location to save the file (e.g., "saved_game.ser").
      */
-    public Board getBoard() {
-        return board;
+    public void saveGame(String filePath) {
+        if (!filePath.endsWith(".ser")) {// make the extension
+            filePath += ".ser";
+        }
+
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            // we need to load them with the same order
+            out.writeObject(players);
+            out.writeInt(currentPlayerIndex);
+            out.writeObject(bag);
+            out.writeObject(board);
+            out.writeBoolean(gameFinished);
+            out.writeObject(thief);
+            out.writeBoolean(isSinglePlayer);
+            view.showMessage("Game saved successfully to " + filePath);
+        } catch (IOException i) {
+            view.showErrorMessage("Failed to save game: " + i.getMessage());
+            i.printStackTrace();
+        }
+    }
+
+    /**
+     * Loads a game state from a file and restores the application state.
+     *
+     * @param filePath The location of the save file.
+     */
+    public void loadGame(String filePath) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
+            this.players = (ArrayList<Player>) in.readObject();
+            this.currentPlayerIndex = in.readInt();
+            this.bag = (Bag) in.readObject();
+            this.board = (Board) in.readObject();
+            this.gameFinished = in.readBoolean();
+            this.thief = (Player) in.readObject();
+            this.isSinglePlayer = in.readBoolean();
+            view.showMessage("Game loaded successfully!");
+            view.updateView();
+        } catch (IOException i) {
+            view.showErrorMessage("Could not load file: " + i.getMessage());
+            i.printStackTrace();
+        } catch (ClassNotFoundException c) {
+            view.showErrorMessage("Game file is corrupted or incompatible.");
+            c.printStackTrace();
+        }
+    }
+
+    // =============================================================
+    // AUDIO & TIMER
+    // =============================================================
+
+    /**
+     * Initializes and starts the turn timer.
+     * If the timer reaches 0, it automatically ends the turn.
+     */
+    private void startTimer() {
+        // Stop existing timer if running
+        if (gameTimer != null) {
+            gameTimer.stop();
+        }
+
+        timeLeft = TURN_DURATION;
+        view.updateTimer(timeLeft);
+
+        // Create a new timer that ticks every 1000ms (1 second)
+        gameTimer = new Timer(1000, e -> {
+            timeLeft--;
+            view.updateTimer(timeLeft);
+
+            if (timeLeft <= 0) {
+                gameTimer.stop();
+                view.showMessage("Time's up! Turn ended.");
+                endTurn(); // Force end of turn
+            }
+        });
+
+        gameTimer.start();
     }
 
     /**
@@ -502,33 +584,6 @@ public class Controller {
     }
 
     /**
-     * Initializes and starts the turn timer.
-     * If the timer reaches 0, it automatically ends the turn.
-     */
-    private void startTimer() {
-        // Stop existing timer if running
-        if (gameTimer != null) {
-            gameTimer.stop();
-        }
-
-        timeLeft = TURN_DURATION;
-        view.updateTimer(timeLeft);
-
-        // Create a new timer that ticks every 1000ms (1 second)
-        gameTimer = new Timer(1000, e -> {
-            timeLeft--;
-            view.updateTimer(timeLeft);
-
-            if (timeLeft <= 0) {
-                gameTimer.stop();
-                view.showMessage("Time's up! Turn ended.");
-                endTurn(); // Force end of turn
-            }
-        });
-
-        gameTimer.start();
-    }
-    /**
      * Plays a specific sound effect indicating a landslide occurred.
      * This uses a standard WAV file for compatibility.
      */
@@ -550,6 +605,20 @@ public class Controller {
             e.printStackTrace();
         }
     }
+
+    // =============================================================
+    // GETTERS
+    // =============================================================
+
+    /**
+     * Accessor for the game board.
+     *
+     * @return The Board object associated with this controller.
+     */
+    public Board getBoard() {
+        return board;
+    }
+
     /**
      * Retrieves the player whose turn it currently is.
      *
@@ -559,46 +628,5 @@ public class Controller {
         if (players == null || players.isEmpty()) return null;
         if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return null;
         return players.get(currentPlayerIndex);
-    }
-    /**
-     * Handles the logic for using a Character card's special ability.
-     * Validates the player's selection and delegates the action to the specific Character subclass.
-     * Checks if the character has already been used and updates the view upon success.
-     */
-    public void useCharacter() {
-        if (gameFinished) return;
-        if (players == null || players.isEmpty()) return;
-        if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return;
-
-        Player current = players.get(currentPlayerIndex);
-
-        boolean validCharacterSelected = false;
-
-        while (!validCharacterSelected) {
-            int charIndex = view.promptCharacterSelection(); // or promptCharacterSelection()
-            if (charIndex == -1) {
-                break; // user cancelled
-            }
-
-            Character[] chars = current.getCharacters();
-            if (chars == null || charIndex < 0 || charIndex >= chars.length) {
-                view.showErrorMessage("Invalid character selection.");
-                break;
-            }
-
-            Character chosenChar = chars[charIndex];
-            if (chosenChar == null) {
-                view.showErrorMessage("Selected character is not initialized.");
-                break;
-            }
-
-            if (!chosenChar.getIsUsed()) {
-                chosenChar.useAbility(current, this);
-                validCharacterSelected = true;
-                view.updateView();
-            } else {
-                view.showErrorMessage("You have already used this character!");
-            }
-        }
     }
 }
