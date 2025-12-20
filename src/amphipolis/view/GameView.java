@@ -642,7 +642,7 @@ public class GameView extends JFrame {
 
     /**
      * Closes the window and exits the program after the given delay.
-     * @param delayMillis  the milliseconds its going to wait
+     * @param delayMillis  the milliseconds it's going to wait
      */
     public void scheduleExitAfterDelay(int delayMillis) {
         new javax.swing.Timer(delayMillis, e -> {
