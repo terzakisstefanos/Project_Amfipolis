@@ -1,0 +1,257 @@
+@startuml
+abstract class amphipolis.model.Character {
+- boolean isUsed
++ boolean getIsUsed()
++ void setUsed()
++ {abstract}void useAbility(Player,Controller)
+}
+
+
+enum amphipolis.model.Color {
++  RED
++  GREEN
++  BLUE
++  YELLOW
++  BROWN
++  PURPLE
+}
+
+class amphipolis.model.Archaeologist {
++ void useAbility(Player,Controller)
+}
+
+enum amphipolis.model.SkeletonPart {
++  UPPER
++  LOWER
+}
+
+class amphipolis.model.EntranceZone {
+- int MAX_CAPACITY
++ boolean isFull()
+}
+
+
+class amphipolis.model.Bag {
+- ArrayList<Tile> contents
++ Tile drawRandomTile()
++ boolean isEmpty()
+}
+
+
+class amphipolis.model.Zone {
+- ArrayList<Tile> tiles
++ void addTile(Tile)
++ Tile removeTile()
++ ArrayList<Tile> getTiles()
++ boolean isEmpty()
+}
+
+
+class amphipolis.view.GameView {
+- Controller controller
+- JLayeredPane boardPane
+- JButton drawButton
+- JButton endTurnButton
+- JButton muteButton
+- JLabel timerLabel
+- JButton saveButton
+- JButton useCharacterButton
+- {static} double MOSAIC_X_REL
+- {static} double MOSAIC_Y_REL
+- {static} double STATUE_X_REL
+- {static} double STATUE_Y_REL
+- {static} double AMPHORA_X_REL
+- {static} double AMPHORA_Y_REL
+- {static} double SKELETON_X_REL
+- {static} double SKELETON_Y_REL
+- {static} double ENTRANCE_X_REL
+- {static} double ENTRANCE_Y_REL
+- {static} int ZONE_BOX_WIDTH
+- {static} int ZONE_BOX_HEIGHT
+- JFrame handWindow
+- JPanel handPanel
+- JLabel handTitleLabel
+- void initHandWindow()
+- void initHandPanel()
+- JPanel createHandContainer()
++ void updateView()
+- void drawZone(amphipolis.model.Zone,int,int)
+- void updateHandPanel()
++ boolean promptLoadGame()
++ int promptLoadType()
++ String promptFileSelection()
++ String promptSaveFilePath()
++ void showMessage(String)
++ void showErrorMessage(String)
++ int promptPlayerCount()
++ int promptZoneSelection()
++ int promptTileCount()
++ boolean promptUseCharacter()
++ int promptCharacterSelection()
++ void showLandslideDialog()
++ void updateTimer(int)
++ void updateMuteButton(boolean)
++ void setMuteButtonListener(java.awt.event.ActionListener)
++ void setDrawButtonListener(java.awt.event.ActionListener)
++ void setEndTurnButtonListener(java.awt.event.ActionListener)
++ void setSaveButtonListener(java.awt.event.ActionListener)
++ void setUseCharacterButtonListener(java.awt.event.ActionListener)
++ void shakeWindow()
++ void setButtonsEnabled(boolean)
++ void scheduleExitAfterDelay(int)
+}
+
+
+class amphipolis.controller.Controller {
+- ArrayList<Player> players
+- int currentPlayerIndex
+- Bag bag
+- Board board
+- boolean gameFinished
+- GameView view
+- Player thief
+- boolean isSinglePlayer
+- Timer gameTimer
+- int timeLeft
+- int TURN_DURATION
+- Clip musicClip
+- boolean isMuted
+- long clipTimePosition
++ void startGame()
++ void startTurn()
++ void endTurn()
+- void handleLandslide(LandslideTile)
+- void stealAllTiles(Zone)
+- void checkGameOver(EntranceZone)
+- Map<Player,Integer> calculateStatuePoints()
+- Map<Player,Integer> assignMajorityPoints(Map<Player,Integer>,boolean)
++ void useCharacter()
++ Zone selectZone(Zone,boolean)
++ int howmany()
++ void saveGame(String)
++ void loadGame(String)
+- void startTimer()
+- void playMusicForPlayer(int)
++ void toggleMute()
+- void playLandslideSound()
++ Board getBoard()
++ Player getCurrentPlayer()
+}
+
+
+class amphipolis.model.Coder {
++ void useAbility(Player,Controller)
+}
+
+abstract class amphipolis.model.FindingTile {
+}
+class amphipolis.Main {
++ {static} void main(String[])
+}
+
+class amphipolis.model.Board {
+- Zone mosaicZone
+- Zone amphoraZone
+- Zone skeletonZone
+- Zone statueZone
+- EntranceZone entranceZone
++ void init()
++ Zone getMosaicZone()
++ Zone getAmphoraZone()
++ Zone getSkeletonZone()
++ Zone getStatueZone()
++ EntranceZone getEntranceZone()
+}
+
+
+class amphipolis.model.Assistant {
++ void useAbility(Player,Controller)
+}
+
+class amphipolis.model.MosaicTile {
+- Color color
++ Color getColor()
+}
+
+
+class amphipolis.model.Professor {
++ void useAbility(Player,Controller)
+}
+
+enum amphipolis.model.SkeletonType {
++  BIG
++  SMALL
+}
+
+class amphipolis.model.SkeletonTile {
+- SkeletonType type
+- SkeletonPart part
++ SkeletonType getType()
++ SkeletonPart getPart()
+}
+
+
+class amphipolis.model.Digger {
++ void useAbility(Player,Controller)
+}
+
+class amphipolis.model.Player {
+- String name
+- int score
+- ArrayList<Tile> collectedTiles
+- Character[] myCharacters
+- Zone lastVisitedZone
+- Zone coderReservedZone
++ Zone getLastVisitedZone()
++ void setLastVisitedZone(Zone)
++ Zone getCoderReservedZone()
++ void setCoderReservedZone(Zone)
++ int computePoints()
++ void addTile(Tile)
++ Character[] getCharacters()
++ String getName()
++ ArrayList<Tile> getCollectedTiles()
+}
+
+
+class amphipolis.model.AmphoraTile {
+- Color color
++ Color getColor()
+}
+
+
+abstract class amphipolis.model.Tile {
+- String imagePath
++ String getImagePath()
+}
+
+
+class amphipolis.model.StatueTile {
+- boolean isSphinx
++ boolean isSphinx()
+}
+
+
+class amphipolis.model.LandslideTile {
+}
+
+
+amphipolis.model.Serializable <|.. amphipolis.model.Character
+amphipolis.model.Character <|-- amphipolis.model.Archaeologist
+amphipolis.model.Zone <|-- amphipolis.model.EntranceZone
+amphipolis.model.Serializable <|.. amphipolis.model.Bag
+amphipolis.model.Serializable <|.. amphipolis.model.Zone
+amphipolis.view.JFrame <|-- amphipolis.view.GameView
+amphipolis.model.Character <|-- amphipolis.model.Coder
+amphipolis.model.Tile <|-- amphipolis.model.FindingTile
+amphipolis.model.Serializable <|.. amphipolis.model.Board
+amphipolis.model.Character <|-- amphipolis.model.Assistant
+amphipolis.model.FindingTile <|-- amphipolis.model.MosaicTile
+amphipolis.model.Character <|-- amphipolis.model.Professor
+amphipolis.model.FindingTile <|-- amphipolis.model.SkeletonTile
+amphipolis.model.Character <|-- amphipolis.model.Digger
+amphipolis.model.FindingTile <|-- amphipolis.model.AmphoraTile
+amphipolis.model.Serializable <|.. amphipolis.model.Tile
+amphipolis.model.FindingTile <|-- amphipolis.model.StatueTile
+amphipolis.model.Tile <|-- amphipolis.model.LandslideTile
+@enduml
