@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * <b>Invariant:</b> The player owns exactly 5 Character cards of a specific color.
  * <b>Invariant:</b> The collected tiles list is never null (though it may be empty).
  */
-public class Player {
+public class Player implements java.io.Serializable {
 
     private final String name;
     private int score;

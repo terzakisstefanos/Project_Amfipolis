@@ -9,7 +9,7 @@ import java.util.Collections;
  * <b>Invariant:</b> The number of tiles in the bag must always be non-negative.
  * <b>Invariant:</b> The bag is initialized with a specific fixed set of tiles as defined by the game rules.
  */
-public class Bag implements java.io.Serializable{
+public class Bag implements java.io.Serializable {
 
     private final ArrayList<Tile> contents;
 
@@ -53,13 +53,14 @@ public class Bag implements java.io.Serializable{
      * Removes and returns a random tile from the bag.
      * * <b>Pre-condition:</b> The bag must not be empty.
      * <b>Post-condition:</b> The size of the bag decreases by 1.
+     *
      * @return A random Tile object.
      */
     public Tile drawRandomTile() {
-        if(isEmpty()){
+        if (isEmpty()) {
             return null;
         }
-        return contents.remove(contents.size()-1);
+        return contents.remove(contents.size() - 1);
     }
 
     /**
@@ -69,5 +70,23 @@ public class Bag implements java.io.Serializable{
      */
     public boolean isEmpty() {
         return contents.isEmpty();
+    }
+
+    /**
+     * Draws the first tile found of a specific class type
+     * Useful if you need to force a specific start state or testing.
+     *
+     * @param type The class of the tile to find (e.g. MosaicTile.class)
+     * @return The tile found, or null if none remain.
+     */
+    public Tile drawTileOfType(Class<?> type) {
+        for (int i = 0; i < contents.size(); i++) {
+            Tile t = contents.get(i);
+            // Check if the tile is exactly the requested type
+            if (t.getClass() == type) {
+                return contents.remove(i);
+            }
+        }
+        return null;
     }
 }

@@ -80,6 +80,10 @@ public class Controller {
         this.bag = new Bag();
         this.board = new Board();
         this.board.init();
+        board.getMosaicZone().addTile(bag.drawTileOfType(MosaicTile.class));
+        board.getAmphoraZone().addTile(bag.drawTileOfType(AmphoraTile.class));
+        board.getSkeletonZone().addTile(bag.drawTileOfType(SkeletonTile.class));
+        board.getStatueZone().addTile(bag.drawTileOfType(StatueTile.class));
         this.gameFinished = false;
         this.players = new ArrayList<>();
         int numPlayers = -1;
