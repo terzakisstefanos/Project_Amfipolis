@@ -18,6 +18,7 @@ public class GameView extends JFrame {
     private final JLabel timerLabel;
     private final JButton saveButton;
     private final JButton useCharacterButton;
+    private final JButton debugEndButton; // delete after
     // Design-time positions
     private static final double MOSAIC_X_REL = 50.0 / 1000.0;
     private static final double MOSAIC_Y_REL = 50.0 / 800.0;
@@ -48,6 +49,9 @@ public class GameView extends JFrame {
 
         this.controller = controller;
 
+        this.debugEndButton = new JButton("DEBUG: End Game");// delete
+        this.debugEndButton.setForeground(Color.RED);
+
         this.setTitle("Amphipolis Game");
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setLayout(new BorderLayout());
@@ -77,6 +81,8 @@ public class GameView extends JFrame {
         controlPanel.add(useCharacterButton);
         this.add(controlPanel, BorderLayout.SOUTH);
 
+        controlPanel.add(debugEndButton);
+
         this.setSize(1000, 800);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
@@ -90,6 +96,10 @@ public class GameView extends JFrame {
                 }
             }
         });
+    }
+    // [ADD THIS] Method to connect the listener
+    public void setDebugEndButtonListener(java.awt.event.ActionListener listener) {
+        this.debugEndButton.addActionListener(listener);
     }
 
     /**
@@ -297,6 +307,7 @@ public class GameView extends JFrame {
             Image img = icon.getImage().getScaledInstance(tileWidth, tileHeight, Image.SCALE_SMOOTH);// scale the image
             JLabel lbl = new JLabel(new ImageIcon(img));// Create the img
             lbl.setAlignmentX(Component.CENTER_ALIGNMENT);// Center the tile
+            handPanel.add(lbl);
             handPanel.add(Box.createRigidArea(new Dimension(0, 5)));// spacer between each tile
         }
         handPanel.revalidate();// Refresh

@@ -55,6 +55,9 @@ public class Controller {
             }
         });
         view.setUseCharacterButtonListener(e -> useCharacter());
+
+        view.setDebugEndButtonListener(e -> fillEntranceAndEnd());// delete
+
         boolean wantToLoad = view.promptLoadGame();
         if (wantToLoad) {
             int loadType = view.promptLoadType(); // 0 = Last Saved, 1 = Custom File
@@ -113,6 +116,18 @@ public class Controller {
             return;
         }
         Player current = players.get(currentPlayerIndex);
+        if (current.getCoderReservedZone() != null) {// The coders action
+            Zone reserved = current.getCoderReservedZone();
+            if (!reserved.isEmpty()) {
+                Tile extraTile = reserved.removeTile();
+                current.addTile(extraTile);
+                view.showMessage(current.getName() + " used the Coder's ability to get an extra tile.");
+            } else {
+                view.showMessage("The zone reserved by the Coder is empty! No extra tile drawn.");
+            }
+            current.setCoderReservedZone(null);// reset the reservation
+            view.updateView();
+        }
         for (int i = 0; i < 4; i++) {
             Tile tile = bag.drawRandomTile();
 
@@ -594,4 +609,23 @@ public class Controller {
         if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return null;
         return players.get(currentPlayerIndex);
     }
+/**
+ * DEBUG METHOD: Fills the entrance zone with Landslide tiles
+ * to naturally trigger the Game Over condition.
+ */
+public void fillEntranceAndEnd() {
+    EntranceZone zone = board.getEntranceZone();
+
+    // 1. Keep adding tiles until the zone reports it is full
+    while (!zone.isFull()) {
+        // We add a LandslideTile because that's what normally goes in the entrance
+        zone.addTile(new LandslideTile("images/landslide.png"));
+    }
+
+    // 2. Refresh the view so we can see the full zone
+    view.updateView();
+
+    // 3. Trigger the STANDARD game over check
+    checkGameOver(zone);
+}
 }

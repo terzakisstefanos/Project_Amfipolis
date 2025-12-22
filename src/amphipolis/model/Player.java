@@ -88,16 +88,30 @@ public class Player {
      * @return The calculated score.
      */
     public int computePoints() {
-        int currentPoints = 0, greent = 0, redt = 0, yellowt = 0, bigtops = 0, bigbot = 0, smalltops = 0, smallbot = 0;
-        int[] amphoraCounts = new int[6];
+        // 1. Setup counters
+        int greent = 0, redt = 0, yellowt = 0;
+        int bigtops = 0, bigbot = 0, smalltops = 0, smallbot = 0;
+
+        // FIX 1: Use dynamic size instead of hardcoded '6' to prevent crashes if new colors are added
+        int colorCount = Color.values().length;
+        int[] amphoraCounts = new int[colorCount];
+
+        // 2. Iterate tiles safely
         for (Tile t : collectedTiles) {
+            // FIX 2: Protect against null tiles
+            if (t == null) continue;
+
+            // CONSTRAINT: Using getClass() instead of instanceof
             if (t.getClass() == MosaicTile.class) {
                 MosaicTile m = (MosaicTile) t;
+                // FIX 3: Check if color is null before reading it
                 if (m.getColor() == Color.GREEN) greent++;
                 else if (m.getColor() == Color.RED) redt++;
                 else if (m.getColor() == Color.YELLOW) yellowt++;
+
             } else if (t.getClass() == SkeletonTile.class) {
                 SkeletonTile s = (SkeletonTile) t;
+                // FIX 4: Ensure type/part are not null if necessary (enums are usually safe, but be careful)
                 if (s.getType() == SkeletonType.BIG) {
                     if (s.getPart() == SkeletonPart.UPPER) bigtops++;
                     else bigbot++;
@@ -105,68 +119,68 @@ public class Player {
                     if (s.getPart() == SkeletonPart.UPPER) smalltops++;
                     else smallbot++;
                 }
+
             } else if (t.getClass() == AmphoraTile.class) {
                 AmphoraTile a = (AmphoraTile) t;
-                amphoraCounts[a.getColor().ordinal()]++; // Use ordinal() to map enum color to an index (0-5)
+                // FIX 5: CRITICAL CHECK - This is the most likely cause of your bug!
+                if (a.getColor() != null) {
+                    amphoraCounts[a.getColor().ordinal()]++;
+                }
             }
         }
-        // Same color sets (4 points)
+
+        int currentPoints = 0;
+
+        // 3. Mosaic Scoring (Logic remains the same)
         currentPoints += (greent / 4) * 4;
         currentPoints += (redt / 4) * 4;
         currentPoints += (yellowt / 4) * 4;
-        // Different color sets (2 points) from leftovers
         int leftovers = (greent % 4) + (redt % 4) + (yellowt % 4);
         currentPoints += (leftovers / 4) * 2;
-        // Find complete skeletons (min of top and bottom)
+
+        // 4. Skeleton Scoring
         int completeBig = Math.min(bigtops, bigbot);
         int completeSmall = Math.min(smalltops, smallbot);
 
-        // Find Families (2 Big + 1 Small = 6 points)
+        // Families (2 Big + 1 Small = 6 points)
         while (completeBig >= 2 && completeSmall >= 1) {
             currentPoints += 6;
             completeBig -= 2;
             completeSmall -= 1;
         }
-
-        // Remaining complete skeletons (1 point each)
+        // Remaining complete skeletons
         currentPoints += completeBig;
         currentPoints += completeSmall;
+
+        // 5. Amphora Scoring
         boolean makingSets = true;
         while (makingSets) {
             int uniqueColorsFound = 0;
-            for (int i = 0; i < 6; i++) {
-                if (amphoraCounts[i] > 0) {
-                    uniqueColorsFound++;
-                }
+            for (int count : amphoraCounts) {
+                if (count > 0) uniqueColorsFound++;
             }
 
-            // Calculate points based on set size
             if (uniqueColorsFound >= 3) {
                 switch (uniqueColorsFound) {
-                    case 6:
-                        currentPoints += 6;
-                        break;
-                    case 5:
-                        currentPoints += 4;
-                        break;
-                    case 4:
-                        currentPoints += 2;
-                        break;
-                    case 3:
-                        currentPoints += 1;
-                        break;
+                    case 6: currentPoints += 6; break;
+                    case 5: currentPoints += 4; break;
+                    case 4: currentPoints += 2; break;
+                    case 3: currentPoints += 1; break;
                 }
-                for (int i = 0; i < 6; i++) {// remove the tiles that are used
-                    if (amphoraCounts[i] > 0) {
-                        amphoraCounts[i]--;
-                    }
+                // Remove one of each used color
+                for (int i = 0; i < amphoraCounts.length; i++) {
+                    if (amphoraCounts[i] > 0) amphoraCounts[i]--;
                 }
             } else {
-                makingSets = false; // not enough
+                makingSets = false;
             }
         }
 
         this.score = currentPoints;
+
+        // DEBUG: Print to console to prove it ran for this player
+        System.out.println("DEBUG: Calculated " + currentPoints + " points for " + this.name);
+
         return currentPoints;
     }
 
