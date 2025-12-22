@@ -55,9 +55,6 @@ public class Controller {
             }
         });
         view.setUseCharacterButtonListener(e -> useCharacter());
-
-        view.setDebugEndButtonListener(e -> fillEntranceAndEnd());// delete
-
         boolean wantToLoad = view.promptLoadGame();
         if (wantToLoad) {
             int loadType = view.promptLoadType(); // 0 = Last Saved, 1 = Custom File
